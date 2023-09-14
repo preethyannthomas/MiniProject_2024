@@ -1,0 +1,178 @@
+        * {
+            font-size: 18px;
+        }
+
+        body {
+            font-style: italic;
+            font-family: 'Times, Times New Roman, serif';
+        }
+
+        .highlight-box {
+            border: 2px solid #a8b0bc;
+            /* Border color */
+            padding: 10px;
+
+            /* Padding inside the box */
+            background-color: #d7eced;
+            /* Background color */
+            display: inline-block;
+            /* Display as an inline box */
+        }
+
+        /* Optional: Style for the equation text */
+        .equation {
+            font-size: 18px;
+            font-weight: bold;
+            color: #333;
+        }
+
+        .faq-container {
+
+            margin: 0 auto;
+        }
+
+        .faq-item {
+            margin-bottom: 5px;
+        }
+
+        .faq-question {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            cursor: pointer;
+            font-weight: bold;
+            padding: 10px;
+            background-color: #f7f7f7;
+        }
+
+        .faq-answer {
+            display: none;
+            padding: 10px;
+            border-top: 1px solid #ccc;
+            background-color: #f0f0f0;
+        }
+
+        .arrow {
+            width: 0;
+            height: 0;
+            border: 4px solid transparent;
+            border-bottom-color: black;
+
+            transform: rotate(180deg);
+            /* Set the initial rotation */
+            transition: transform 0.3s ease-in-out;
+        }
+
+        .open .arrow {
+            transform: rotate(0deg);
+        }
+body {
+    text-align: justify;
+}
+
+
+h3 {
+    font-size: x-large;
+
+}
+
+.product-images {
+    flex: 1;
+    display: flex;
+    align-items: flex-start;
+    flex-wrap: wrap;
+    position: relative;
+}
+
+.image-preview {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+}
+
+.product-image {
+    width: 100px;
+    height: 100px;
+    object-fit: cover;
+    margin: 5px;
+    cursor: pointer;
+}
+
+.zoom-overlay {
+    position: absolute;
+    width: 200px;
+    height: 200px;
+    background-color: rgba(255, 255, 255, 0.7);
+    display: none;
+    pointer-events: none;
+}
+
+table {
+    border-radius: 15px;
+    border-radius: 10px;
+    /* Add rounded border */
+    overflow: hidden;
+}
+
+th {
+    border: 1px solid #ddd3d3;
+    height: 60px;
+}
+
+td {
+    height: 50px;
+    padding: 8px;
+}
+
+th {
+    background-color: #bdd4e5;
+}
+
+/* Optional: Add some styling to alternate rows for better readability */
+tr:nth-child(even) {
+    background-color: #f2f2f2;
+}
+
+.large-image {
+    width: 400px;
+    height: auto;
+}
+
+.product-details {
+    flex: 1;
+    padding: 2px;
+}
+
+.product-price {
+    font-size: 24px;
+    font-weight: bold;
+    color: #ff5722;
+}
+.error-message{
+    color: red;
+}
+.product-rating {
+    color: #4caf50;
+}
+
+.star-icon {
+    color: #ff9800;
+}
+
+.product-description {
+    margin-top: 5px;
+}
+
+.product-attributes {
+    margin-top: 10px;
+}
+
+.add-to-cart-btn {
+    margin-top: 20px;
+    padding: 10px 20px;
+    background-color: #ff5722;
+    color: #fff;
+    border: none;
+    cursor: pointer;
+    font-size: 16px;
+}

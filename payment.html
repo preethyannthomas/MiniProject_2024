@@ -1,0 +1,188 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>Payment</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/css/bootstrap.min.css" rel="stylesheet"
+        integrity="sha384-EVSTQN3/azprG1Anm3QDgpJLIm9Nao0Yz1ztcQTwFspd3yD65VohhpuuCOmLASjC" crossorigin="anonymous">
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/js/bootstrap.bundle.min.js"
+        integrity="sha384-MrcW6ZMFYlzcLA8Nl+NtUVF0sA7MsXsP1UyJoMp4YLEuNSfAP+JcXn/tWtIaxVXM"
+        crossorigin="anonymous"></script>
+    <script>
+        function validate() {
+            var ownname = document.getElementById("owner").value;
+            var cvv1 = document.getElementById("cvv").value;
+            var cardno = document.getElementById("cardNumber").value;
+            var exp = document.getElementById("months").value;
+            var cvvreg = /^[0-9]{3}$/;
+            var letter_exp = /^[a-zA-Z\s]+$/;
+            var cardno_exp =/^4[0-9]{12}(?:[0-9]{3})?$/;
+            if (ownname == "") {
+                alert("Please enter your name as in card.");
+            } else if (!letter_exp.test(ownname)) {
+                alert("Name contains only alphabets.");
+            } else if (cvv1 == "") {
+                alert("Please enter cvv.");
+            }  else if (!cvvreg.test(cvv1)) {
+                alert("Please enter 3 digit cvv.");
+            } else if (cardno == "") {
+                alert("Please enter card number.");
+            } else if (!cardno_exp.test(cardno)) {
+                alert("Please enter valid card number");
+            } else if (exp == "") {
+                alert("Please enter expiry date.");
+            } else {
+                alert("Thank you for shopping!!!!");
+                window.location.href = "index.html";
+            }
+        }
+
+    </script>
+    <style>
+        .creditCardForm {
+            max-width: 700px;
+            background-color: #fff;
+            margin: 100px auto;
+            overflow: hidden;
+            padding: 25px;
+            color: #4c4e56;
+        }
+
+        .creditCardForm label {
+            width: 100%;
+            margin-bottom: 10px;
+        }
+
+        .creditCardForm .heading h1 {
+            text-align: center;
+            font-family: 'Open Sans', sans-serif;
+            color: #4c4e56;
+        }
+
+        .creditCardForm .payment {
+            float: left;
+            font-size: 18px;
+            padding: 10px 25px;
+            margin-top: 20px;
+            position: relative;
+        }
+
+        .creditCardForm .payment .form-group {
+            float: left;
+            margin-bottom: 15px;
+        }
+
+        .creditCardForm .payment .form-control {
+            line-height: 40px;
+            height: auto;
+            padding: 0 16px;
+        }
+
+        .creditCardForm .owner {
+            width: 63%;
+            margin-right: 10px;
+        }
+
+        .creditCardForm .CVV {
+            width: 35%;
+        }
+
+        .creditCardForm #card-number-field {
+            width: 100%;
+        }
+
+        .creditCardForm #expiration-date {
+            width: 49%;
+        }
+
+        .creditCardForm #credit_cards {
+            width: 50%;
+            margin-top: 30px;
+        }
+
+        .creditCardForm #pay-now {
+            width: 100%;
+            margin-top: 25px;
+        }
+
+        .creditCardForm .payment .btn {
+            width: 100%;
+            margin-top: 3px;
+            font-size: 24px;
+            background-color: #2ec4a5;
+            color: white;
+        }
+
+        .creditCardForm .payment select {
+            padding: 10px;
+            margin-right: 15px;
+        }
+
+        .transparent {
+            opacity: 0.2;
+        }
+
+        @media(max-width: 650px) {
+
+            .creditCardForm .owner,
+            .creditCardForm .CVV,
+            .creditCardForm #expiration-date,
+            .creditCardForm #credit_cards {
+                width: 100%;
+            }
+
+            .creditCardForm #credit_cards {
+                text-align: left;
+            }
+        }
+
+        #months {
+            width: 250px;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="creditCardForm">
+        <div class="heading">
+            <h1>Confirm Purchase</h1>
+        </div>
+        <div class="payment">
+            <form>
+                <div class="form-group owner">
+                    <label for="owner">Owner</label>
+                    <input type="text" class="form-control" id="owner">
+                </div>
+                <div class="form-group CVV">
+                    <label for="cvv">CVV</label>
+                    <input type="text" class="form-control" id="cvv">
+                </div>
+                <div class="form-group" id="card-number-field">
+                    <label for="cardNumber">Card Number</label>
+                    <input type="text" class="form-control" id="cardNumber">
+                </div>
+                <div class="form-group" id="expiration-date">
+                    <label>Expiration Date</label>
+                    <input type="date" id="months">
+                </div>
+
+                <div class="form-group" id="credit_cards">
+                    <br><i class="fa fa-cc-visa fa-2x text-info" aria-hidden="true"></i>
+                    <i class="fa fa-cc-mastercard fa-2x text-danger" aria-hidden="true"></i>
+                    <i class="fa fa-cc-amex fa-2x text-success" aria-hidden="true"></i>
+                    <i class="fa fa-cc-jcb fa-2x text-secondary" aria-hidden="true"></i>
+                    <i class="fa fa-cc-discover fa-2x text-primary" aria-hidden="true"></i>
+                </div>
+                <div class="form-group" id="pay-now">
+                    <input type="button" onclick="validate()" class="btn btn-default"
+                        id="confirm-purchase" value = "Confirm">
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script src="https://kit.fontawesome.com/d31ba2c1e1.js" crossorigin="anonymous"></script>
+
+</body>
+
+</html>

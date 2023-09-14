@@ -1,0 +1,606 @@
+<?php
+include("../connection.php");
+session_start();
+if (!isset($_SESSION['user_id'])) {
+    header('location:./');
+    exit();
+}
+if (isset($_POST['submit'])) {
+    $user_id = $_SESSION['user_id'];
+    $name = $_POST["name"];
+    $category_name = $_POST["category"];
+    $subcategory_name = $_POST["subcategory"];
+    $material = $_POST["material"];
+    $dimension = $_POST["dimension"];
+    $weight = $_POST["weight"];
+    $usageDescription = $_POST["usageDescription"];
+    $careInstruction = $_POST["careInstruction"];
+    $price = $_POST["price"];
+
+    $categoryQuery = "SELECT category_id FROM tbl_category WHERE category_name = '$category_name'";
+    $categoryResult = $conn->query($categoryQuery);
+echo '';
+    if ($categoryResult && $categoryResult->num_rows == 1) {
+        $categoryRow = $categoryResult->fetch_assoc();
+        $category_id = $categoryRow["category_id"];
+
+        echo "Category Name: " . $category_name . "<br>";
+        echo "Category ID: " . $category_id . "<br>";
+
+        $subcategoryQuery = "SELECT subcategory_id FROM tbl_subcategory WHERE subcategory_name = '$subcategory_name' AND category_id = $category_id";
+        $subcategoryResult = $conn->query($subcategoryQuery);
+
+        if ($subcategoryResult && $subcategoryResult->num_rows == 1) {
+            $subcategoryRow = $subcategoryResult->fetch_assoc();
+            $subcategory_id = $subcategoryRow["subcategory_id"];
+
+            // Debugging: Print subcategory_name and subcategory_id
+            echo "Subcategory Name: " . $subcategory_name . "<br>";
+            echo "Subcategory ID: " . $subcategory_id . "<br>";
+
+            // Retrieve seller_id from tbl_seller based on user_id
+            $sellerQuery = "SELECT seller_id FROM tbl_seller WHERE user_id = $user_id";
+            $sellerResult = $conn->query($sellerQuery);
+
+            if ($sellerResult && $sellerResult->num_rows == 1) {
+                $sellerRow = $sellerResult->fetch_assoc();
+                $seller_id = $sellerRow["seller_id"];
+
+                // Debugging: Print seller_id
+                echo "Seller ID: " . $seller_id . "<br>";
+
+                // Handle image upload for tbl_product
+                if (isset($_FILES['product_image']) && !empty($_FILES['product_image']['name'])) {
+                    $image = file_get_contents($_FILES['product_image']['tmp_name']);
+
+                    // Insert data into tbl_product using seller_id and store the image as LONGBLOB
+                    $insertProductQuery = "INSERT INTO tbl_product (seller_id, subcategory_id, product_name, price, is_available, image, material, dimension, weight) VALUES ($seller_id, $subcategory_id, '$name', $price, 1, ?, '$material', '$dimension', $weight)";
+                    $stmt = $conn->prepare($insertProductQuery);
+                    $stmt->bind_param("b", $image);
+
+                    if ($stmt->execute()) {
+                        // Get the newly inserted product ID
+                        $productId = $stmt->insert_id;
+
+                        // Insert data into tbl_productdescription
+                        $insertDescriptionQuery = "INSERT INTO tbl_productdescription (product_id, colour, usage_description, weight, care_instruction, material, dimension) VALUES ($productId, '$colour', '$usageDescription', '$weight', '$careInstruction', '$material', '$dimension')";
+                        $conn->query($insertDescriptionQuery);
+
+                        $colour = ''; // Set the color to an appropriate value
+
+                        // Handle product details (size, color, stock, price) insertion here
+                        if (isset($_POST['size']) && isset($_POST['color']) && isset($_POST['numItems'])) {
+                            $sizes = $_POST['size'];
+                            $colors = $_POST['color'];
+                            $numItems = $_POST['numItems'];
+
+                            // Loop through the arrays and insert data into tbl_productdetail
+                            for ($i = 0; $i < count($sizes); $i++) {
+                                $size = $sizes[$i];
+                                $color = $colors[$i];
+                                $stock = $numItems[$i];
+
+                                // Handle image upload for tbl_productdetail (similar logic as above)
+                                if (isset($_FILES['images' . $i]) && !empty($_FILES['images' . $i]['name'])) {
+                                    $image = file_get_contents($_FILES['images' . $i]['tmp_name']);
+                                } else {
+                                    // Handle if image is missing for a product detail
+                                    $image = null;
+                                }
+
+                                $insertProductDetailQuery = "INSERT INTO tbl_productdetail (size, colour, stock, is_available, product_id, new_price, image) VALUES ('$size', '$color', $stock, 1, $productId, $price, ?)";
+                                $stmt = $conn->prepare($insertProductDetailQuery);
+                                $stmt->bind_param("b", $image);
+
+                                if (!$stmt->execute()) {
+                                    echo '<script>alert("Error inserting product detail: ' . $stmt->error . '")</script>';
+                                    exit; // Exit the script on error
+                                }
+                            }
+
+                            // Respond with a success message and redirect to dashboard.php
+                            echo '<script>alert("Product added successfully.")</script>';
+                            header('location: dashboard.php');
+                            exit();
+                        } else {
+                            echo '<script>alert("Product details are missing.")</script>';
+                        }
+                    } else {
+                        echo '<script>alert("Error inserting product: ' . $stmt->error . '")</script>';
+                    }
+                } else {
+                    echo '<script>alert("Product image is missing.")</script>';
+                }
+            } else {
+                echo '<script>alert("Seller not found for the logged-in user.")</script>';
+            }
+        } else {
+            echo '<script>alert("Invalid subcategory name.")</script>';
+        }
+    } else {
+        echo '<script>alert("Invalid category name.")</script>';
+    }
+}
+
+// Close the database connection
+$conn->close();
+?>
+
+    <!DOCTYPE html>
+    <html lang="en">
+    <head>
+        
+        <title>Dashboard</title>
+        
+        <link rel="stylesheet" href="../libs/bower/font-awesome/css/font-awesome.min.css">
+        <link rel="stylesheet" href="../libs/bower/material-design-iconic-font/dist/css/material-design-iconic-font.css">
+        <!-- build:css assets/css/app.min.css -->
+        <link rel="stylesheet" href="../libs/bower/animate.css/animate.min.css">
+        <link rel="stylesheet" href="../libs/bower/fullcalendar/dist/fullcalendar.min.css">
+        <link rel="stylesheet" href="../libs/bower/perfect-scrollbar/css/perfect-scrollbar.css">
+        <link rel="stylesheet" href="../assets/css/bootstrap.css">
+        <link rel="stylesheet" href="../assets/css/core.css">
+        <link rel="stylesheet" href="../assets/css/app.css">
+        <!-- endbuild -->
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Raleway:400,500,600,700,800,900,300">
+        <!-- <script src="jquery-3.6.4.min.js"></script> -->
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/js/all.min.js"></script>
+        <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.4/jquery.min.js"></script>
+        <script src="../libs/bower/breakpoints.js/dist/breakpoints.min.js"></script>
+        <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.4/jquery.min.js"></script>
+        <script>
+            Breakpoints();
+        </script>
+       <style>
+  /* Style for "Choose Files" button */
+  .custom-file-button {
+    border: 1px solid black; /* Black border */
+    color: black; /* Black text color */
+    background-color: transparent; /* Transparent background */
+  }
+
+  .custom-file-button:hover {
+    background-color: black; /* Black background on hover */
+    color: white; /* White text color on hover */
+  }
+
+  .custom-file-button:focus {
+    outline: none; /* Remove the default focus outline */
+    border: 1px solid black; /* Black border on focus */
+  }
+
+  /* Style for "Remove" button */
+  .removeRowBtn {
+    border: 1px solid red; /* Red border */
+    color: red; /* Red text color */
+    background-color: transparent; /* Transparent background */
+  }
+
+  .removeRowBtn:hover {
+    background-color: red; /* Red background on hover */
+    color: white; /* White text color on hover */
+  }
+
+  .removeRowBtn:focus {
+    outline: none; /* Remove the default focus outline */
+    border: 1px solid red; /* Red border on focus */
+  }
+</style>
+
+
+    </head>
+        
+    <body class="menubar-left menubar-unfold menubar-light theme-primary style = "background-color: white">
+    <!--============= start main area -->
+
+
+    <?php include_once('header.php');?>
+
+    <?php include_once('sidebar.php');?>
+
+    <!-- APP MAIN ==========-->
+<main id="app-main" class="app-main">
+    <div class="wrap">
+        <section class="app-content">
+            <div class="row">
+
+                <div class="col-md-12">
+                    <div class="widget">
+                        <header class="widget-header">
+                            <h3 class="widget-title">Add your Product</h3>
+                        </header><!-- .widget-header -->
+                        <hr class="widget-separator">
+                        <div class="widget-body">
+                            <form class="form-horizontal" name="addProduct" id="addProduct" method="post">
+                                <div class="form-group">
+                                    <label for="productName" class="col-sm-3 control-label">Product Name:</label>
+                                    <div class="col-sm-9">
+                                        <input type="text" class="form-control" name="productName" id="productName" required="true">
+                                    </div>
+                                </div>
+                                <div class="form-group">
+                                    <label for="category" class="col-sm-3 control-label">Apparel Category:</label>
+                                    <div class="col-sm-9">
+                                        <div class="row">
+                                            <div class="col-md-6">
+                                                <!-- Category Dropdown -->
+
+                                                <select class="form-control" id="category" name="category" required onchange="loadSubcategories()">
+                                                    <option value="" disabled selected>Select Category</option>
+                                                    <?php
+                                                    // Query to fetch categories from tbl_category
+                                                    $categoryQuery = "SELECT category_id, category_name FROM tbl_category WHERE status = 1";
+                                                    $categoryStmt = $conn->prepare($categoryQuery);
+                                                    $categoryStmt->execute();
+                                                    $categoryResult = $categoryStmt->get_result();
+
+                                                    if ($categoryResult && $categoryResult->num_rows > 0) {
+                                                        while ($categoryRow = $categoryResult->fetch_assoc()) {
+                                                            $categoryId = $categoryRow["category_id"]; // Corrected variable name
+                                                            $categoryName = $categoryRow["category_name"];
+                                                            echo "<option value='$categoryId'>$categoryName</option>";
+                                                        }
+                                                    }
+                                                    ?>
+                                                </select>
+
+                                            </div>
+                                            <div id="subcategory-container" class="col-md-6">
+
+                                                <!-- Subcategory Dropdown -->
+
+                                                <select class="form-control" id="subcategory" name="subcategory" required>
+                                                    <option value="" disabled selected>Select Subcategory</option>
+                                                </select>
+
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="form-group">
+                                    <label for="material" class="col-sm-3 control-label">General Details:</label>
+                                    <div class="col-sm-9">
+                                        <div class="row">
+                                            <div class="product-details-row col-md-4">
+                                                <input type="text" class="form-control" placeholder="Material" name="material" id="material" required="true">
+                                            </div>
+                                            <div class="product-details-row col-md-4">
+                                                <input type="text" class="form-control" placeholder="Dimension" name="dimension" id="dimension" required="true">
+                                            </div>
+                                            <div class="product-details-row col-md-4">
+                                                <input type="text" class="form-control" placeholder="Weight" name="weight" id="weight" required="true">
+                                            </div>
+                                        </div>
+
+                                    </div>
+                                </div>
+                                <div class="form-group">
+                                    <label for="usage" class="col-sm-3 control-label">Instructions:</label>
+                                    <div class="col-sm-9">
+                                        <div class="product-details-row">
+                                            <div class="row">
+                                                <div class="col-md-6">
+                                                    <input type="text" class="form-control" placeholder="Usage Description" name="usage" id="usage" required="true">
+                                                </div>
+                                                <div class="col-md-6">
+                                                    <input type="text" class="form-control" placeholder="Additional Description" name="description" id="description" required="true">
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="form-group">
+                                    <label for="material" class="col-sm-3 control-label">General Details:</label>
+                                    <div class="col-sm-9">
+                                        <div class="product-details-row">
+                                            <div class="row">
+                                                <div class="col-md-4">
+                                                    <input type="text" class="form-control" placeholder="Material" name="material" id="material" required="true">
+                                                </div>
+
+                                                <div class="col-md-4">
+                                                    <input type="text" class="form-control" placeholder="Dimension" name="dimension" id="dimension" required="true">
+                                                </div>
+
+                                                <div class="col-md-4">
+                                                    <input type="text" class="form-control" placeholder="Weight" name="weight" id="weight" required="true">
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+<!-- Product Details Section -->
+<div class="form-group">
+        
+    <label class="col-sm-3 control-label"><br>Product Details:</label>
+    <div class="col-sm-9">
+        <div class="product-details-row">
+            <div class="row">
+            <div class="col-md-1">
+            <label for="size">Size</label>
+                    <select class="form-control" id="size" name="size[]">
+                        <option value="S">S</option>
+                        <option value="XS">XS</option>
+                        <option value="X">X</option>
+                        <option value="XXL">XXL</option>
+                        <option value="L">L</option>
+                        <option value="M">M</option>
+                        <option value="Free Size">Free Size</option>
+                    </select>
+                </div>
+                <div class="col-md-2">
+                <label for="color">Colour</label>
+                    <select class="form-control" id="color" name="color[]">
+                        <option value="" disabled selected>Select Colour</option>
+                        <?php
+                        // Query to fetch colors from your database (adjust this query as needed)
+                        $sql = "SELECT colour_id, colour FROM tbl_colour";
+                        $result = $conn->query($sql);
+
+                        if ($result->num_rows > 0) {
+                            while ($row = $result->fetch_assoc()) {
+                                $colour_id = $row['colour_id'];
+                                $colour_name = $row['colour'];
+                                echo "<option value='$colour_name'>$colour_name</option>";
+                            }
+                        } else {
+                            echo "<option value='' disabled>No colours available</option>";
+                        }
+                        ?>
+                    </select>
+                </div>
+                <div class="col-md-2">
+                <label for="numItems">Stock</label>
+                    <input type="number" min="1" class="form-control" name="stock[]" placeholder="Stock" required="true">
+                </div>
+                <div class="col-md-2">
+                <label for="price">Price</label>
+                    <input type="number" min="1" class="form-control" name="price[]" placeholder="Price" required="true">
+                </div>
+                <div class="col-md-3">
+                <label for="images">Images (PNG/JPG only)</label>
+                <button type="button" class="btn btn-primary custom-file-button"
+                    onclick="document.getElementById('images${rowCount}').click();">
+                    Choose Files
+                </button>
+                </div>
+                <div class="col-md-2">
+                    <button type="button" class="remove-row-btn">Remove</button>
+                </div>
+            </div>  
+        </div>
+    
+    </div>
+    
+</div>
+<div class="form-group">
+    <div id = "detailsContainer">
+
+    </div>
+</div>
+                                
+                                <div class="form-group">
+                                    <div class="col-sm-9 col-sm-offset-3">
+                                        
+                                    <button type="button" class="btn btn-link text-primary mt-3" id="addRowBtn" style="text-decoration:none;">+ Add New Row</button>
+    <br><br>
+
+                                        <button type="submit" class="btn btn-success" name="submit">Add Product</button>
+                                    </div>
+                                </div>  
+                            </form>
+                        </div><!-- .widget-body -->
+                    </div><!-- .widget -->
+                </div><!-- END column -->
+            </div><!-- .row -->
+        </section><!-- #dash-content -->
+    </div><!-- .wrap -->
+
+    <!-- APP FOOTER -->
+    <?php include_once('footer.php');?>
+    <!-- /#app-footer -->
+</main>
+
+    <!--========== END app main -->
+
+        <!-- build:js assets/js/core.min.js -->
+        <script src="../libs/bower/jquery/dist/jquery.js"></script>
+        <script src="../libs/bower/jquery-ui/jquery-ui.min.js"></script>
+        <script src="../libs/bower/jQuery-Storage-API/jquery.storageapi.min.js"></script>
+        <script src="../libs/bower/bootstrap-sass/assets/javascripts/bootstrap.js"></script>
+        <script src="../libs/bower/jquery-slimscroll/jquery.slimscroll.js"></script>
+        <script src="../libs/bower/perfect-scrollbar/js/perfect-scrollbar.jquery.js"></script>
+        <script src="../libs/bower/PACE/pace.min.js"></script>
+        <!-- endbuild -->
+
+        <!-- build:js assets/js/app.min.js -->
+        <script src="../assets/js/library.js"></script>
+        <script src="../assets/js/plugins.js"></script>
+        <script src="../assets/js/app.js"></script>
+        <!-- endbuild -->
+        <script src="../libs/bower/moment/moment.js"></script>
+        <script src="../libs/bower/fullcalendar/dist/fullcalendar.min.js"></script>
+        <script src="../assets/js/fullcalendar.js"></script>
+        <!-- <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script> -->
+        <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.5.3/dist/umd/popper.min.js"></script>
+        <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+    
+
+<!-- Include jQuery -->
+<!-- <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script> -->
+
+<script>
+
+function loadSubcategories() {
+    const selectedCategoryId = $("#category").val(); // Get the selected category ID
+    const subcategoryDropdown = $("#subcategory");
+
+    // Clear existing options
+    subcategoryDropdown.empty();
+    subcategoryDropdown.append('<option value="" disabled selected>Select Subcategory</option>');
+
+    try {
+        if (selectedCategoryId) {
+            console.log(selectedCategoryId);
+
+            // Send an AJAX request to fetch subcategories based on the selected category ID
+            $.ajax({
+                url: `fetch_subcategories.php?category_id=${selectedCategoryId}`, // Pass the selected category ID
+                type: "GET",
+                dataType: "json",
+                success: function (data) {
+                    // Populate the Subcategory dropdown with fetched data
+                    if (data) {
+                        $.each(data, function (key, value) {
+                            subcategoryDropdown.append($('<option>', {
+                                value: value.subcategory_id, // Use subcategory_id as the value
+                                text: value.subcategory_name // Display subcategory_name as the text
+                            }));
+                        });
+                    }
+                    console.log("Data", data);
+                },
+                error: function (xhr, status, error) {
+                    console.log("AJAX Error:", status, error);
+                },
+            });
+        }
+    } catch (err) {
+        console.log(err);
+    }
+}
+</script>
+
+<script>
+    $(document).ready(function () {
+        // Function to add a new dynamic row for product details
+        function addDynamicRow(rowCount) {
+            const newRow = `
+            <div class="form-group" id="row${rowCount}">
+                <label class="col-sm-3 control-label"></label>
+                <div class="col-sm-9">
+                    <div class="col-md-1">
+                        <label for="size${rowCount}">Size</label>
+                        <select class="form-control" id="size${rowCount}" name="size[${rowCount}]">
+                            <option value="S">S</option>
+                            <option value="XS">XS</option>
+                            <option value="X">X</option>
+                            <option value="XXL">XXL</option>
+                            <option value="L">L</option>
+                            <option value="M">M</option>
+                            <option value="Free Size">Free Size</option>
+                        </select>
+                    </div>
+                    <div class="col-md-2">
+                        <label for="color${rowCount}">Colour</label>
+                        <select class="form-control" id="color${rowCount}" name="color[${rowCount}]">
+                            <option value="" disabled selected>Select Colour</option>
+                        </select>
+                    </div>
+                    <div class="col-md-2">
+                        <label for="numItems${rowCount}">Stock</label>
+                        <input type="number" class="form-control" id="numItems${rowCount}" min="1" name="numItems[${rowCount}]">
+                    </div>
+                    <div class="col-md-2">
+                        <label for="price${rowCount}">Price</label>
+                        <input type="number" class="form-control" id="price${rowCount}" min="1" name="price[${rowCount}]">
+                    </div>
+                    <div class="col-md-3">
+                        <label for="images${rowCount}">Images (PNG/JPG)</label>
+                        <div id="imageContainer${rowCount}">
+                            <input type="file" accept="image/*" style="display: none;" id="images${rowCount}" name="image[${rowCount}][0]" onchange="showImage(this, ${rowCount})">
+                            <div id="imagePreview${rowCount}" style="display: none;"></div>
+                            <div class="btn-group" role="group" id="imageButtons${rowCount}">
+    <button type="button" class="btn btn-primary custom-file-button" onclick="document.getElementById('images${rowCount}').click();">
+        Choose Files
+    </button>
+    <button type="button" class="btn btn-link text-danger mt-2 removeImageBtn" data-rowid="${rowCount}" style="text-decoration:none;">Remove Image</button>
+    <button type="button" class="btn btn-link text-primary mt-2 addImageBtn" data-rowid="${rowCount}" style="text-decoration:none;">Add Image</button>
+</div>
+
+                        </div>
+                    </div>
+                    <div class="col-md-2">
+                        <label for="remove">     </label><br>
+                        ${rowCount > 1 ? `
+                        <button type="button" class="btn btn-danger mt-4 removeRowBtn" data-rowid="${rowCount}" style="text-decoration:none;">Remove</button>
+                        ` : ''}
+                    </div>
+                </div>
+            </div>
+        `;
+
+        // Append the new dynamic row to the container
+        $("#detailsContainer").append(newRow);
+
+        // Add an event listener to remove the row when the "Remove" button is clicked
+        $(`#row${rowCount} .removeRowBtn`).click(function () {
+            const rowId = $(this).data("rowid");
+            $(`#row${rowId}`).remove();
+        });
+
+        // Function to add a new image input field
+        function addImageInput(rowId) {
+            const imageInput = `
+            <input type="file" accept="image/*" style="display: none;" id="images${rowId}" name="image[${rowId}][]">
+            <button type="button" class="btn btn-primary custom-file-button" onclick="document.getElementById('images${rowId}').click();">
+                Choose Files
+            </button>
+            <button type="button" class="btn btn-link text-danger mt-2 removeImageBtn" data-rowid="${rowId}" style="text-decoration:none;">Remove Image</button>
+            `;
+            $(`#imageContainer${rowId}`).append(imageInput);
+
+            // Add an event listener to remove the image input when the "Remove Image" button is clicked
+            $(`#row${rowId} .removeImageBtn`).click(function () {
+                $(`#images${rowId}`).remove();
+                $(this).remove();
+            });
+        }
+
+        // Function to show image thumbnail
+        function showImage(input, rowId) {
+            const imageContainer = document.getElementById(`imageContainer${rowId}`);
+            const imagePreview = document.getElementById(`imagePreview${rowId}`);
+            const removeImageBtn = document.querySelector(`[data-rowid="${rowId}"] .removeImageBtn`);
+            const addImageBtn = document.querySelector(`[data-rowid="${rowId}"] .addImageBtn`);
+            
+            if (input.files && input.files[0]) {
+                const reader = new FileReader();
+
+                reader.onload = function (e) {
+                    imagePreview.innerHTML = `<img src="${e.target.result}" alt="Image Preview" style="max-width: 100px; max-height: 100px;">`;
+                    imagePreview.style.display = 'block';
+                    removeImageBtn.style.display = 'block';
+                    addImageBtn.style.display = 'none';
+                };
+
+                reader.readAsDataURL(input.files[0]);
+            } else {
+                imagePreview.innerHTML = ''; // Clear the image preview
+                imagePreview.style.display = 'none';
+                removeImageBtn.style.display = 'none';
+                addImageBtn.style.display = 'block';
+            }
+        }
+
+        // Add an event listener to add an image input when the "Add Image" button is clicked
+        $(`#row${rowCount} .addImageBtn`).click(function () {
+            const rowId = $(this).data("rowid");
+            addImageInput(rowId);
+        });
+    }
+
+    // Add a new dynamic row when the "Add New Row" button is clicked
+    $("#addRowBtn").click(function () {
+        const rowCount = $(".form-group:not(:has(.default-row))").length + 1;
+        addDynamicRow(rowCount);
+    });
+
+    // Initialize the default image row
+    addDynamicRow(1); // Start with one dynamic row
+});
+</script>
+
+
+    </body>
+    </html>
