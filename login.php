@@ -1,5 +1,103 @@
 <?php
-session_start();
+require_once('test_login/auth.php');
+require_once('vendor/autoload.php');
+include("connection.php");
+
+if (session_status() === PHP_SESSION_NONE) {
+    session_start();
+}
+
+$clientID = "95908132454-43ct561tga2rk82a6bku1e1llekgfemv.apps.googleusercontent.com"; // Replace with your Google Client ID
+$secret = "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"; // Replace with your Google Client Secret
+
+// Google API Client
+$gclient = new Google_Client();
+
+$gclient->setClientId($clientID);
+$gclient->setClientSecret($secret);
+$gclient->setRedirectUri('http://localhost/Project/login.php');
+
+$gclient->addScope('email');
+$gclient->addScope('profile');
+
+
+
+// Check if the user clicks the Google sign-in button
+if (isset($_GET['code'])) {
+    // Get Token
+    $token = $gclient->fetchAccessTokenWithAuthCode($_GET['code']);
+
+    // Check if fetching token did not return any errors
+    if (!isset($token['error'])) {
+        // Setting Access token
+        $gclient->setAccessToken($token['access_token']);
+
+        // Store access token
+        $_SESSION['access_token'] = $token['access_token'];
+
+        // Get Account Profile using Google Service
+        $gservice = new Google_Service_Oauth2($gclient);
+
+        // Get User Data
+        $udata = $gservice->userinfo->get();
+        foreach ($udata as $k => $v) {
+            $_SESSION['login_' . $k] = $v;
+        }
+        $_SESSION['ucode'] = $_GET['code'];
+        $email = $_SESSION['login_email'];
+
+        if (isset($_SESSION['ucode']) && !empty($_SESSION['ucode'])) {
+            // Query the database to check if the email exists
+            $query = "SELECT * FROM tbl_user WHERE email = '" . mysqli_real_escape_string($conn, $email) . "'";
+            $result = mysqli_query($conn, $query);
+
+            if ($result && mysqli_num_rows($result) > 0) {
+                $user_data = mysqli_fetch_assoc($result);
+                $role = $user_data['role'];
+
+                switch ($role) {
+                    case 0:
+                        // Admin role
+                        $_SESSION['login_role'] = 0;
+                        $_SESSION['user_id'] = $user_data['user_id'];
+                        header("Location: admin/adminProfile.php");
+                        exit;
+                    case 1:
+                        $_SESSION['login_role'] = 1;
+                        $_SESSION['user_id'] = $user_data['user_id'];
+                        // User role
+                        header("Location: home.php");
+                        exit;
+                    case 2:
+                        $_SESSION['login_role'] = 2;
+                        $_SESSION['user_id'] = $user_data['user_id'];
+                        // Seller role
+                        header("Location: seller/sellerProfile.php");
+                        exit;
+                    default:
+                        // Invalid role
+                        echo '<script>alert("Invalid role!")</script>';
+                        exit;
+                }
+            } else {
+                // Email not found in the database
+                echo '<script>alert("Email not found!")</script>';
+            }
+        } else {
+            echo '<script>alert("Invalid session code!")</script>';
+        }
+    } else {
+        echo '<script>alert("Token retrieval error!")</script>';
+    }
+}
+?>
+<!-- Rest of your login.php code... -->
+
+
+<?php
+if (session_status() === PHP_SESSION_NONE) {
+    session_start();
+}
 include("connection.php");
    
 if (isset($_POST['login'])) {
@@ -51,12 +149,14 @@ if (isset($_POST['login'])) {
     }
 }
 ?>
+
 <!DOCTYPE html>
 <html>
 <head>
     <script src="https://www.google.com/recaptcha/api.js" async defer></script>
-</head>
-<style>
+    <script src="https://code.jquery.com/jquery-3.6.1.min.js" integrity="sha256-o88AwQnZB+VDvE9tvIXrMQaPlFFSUTR+nldQm1LuPXQ=" crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.2/dist/js/bootstrap.bundle.min.js" integrity="sha384-OERcA2EqjJCMA+/3y+gxIOqMEjwtxJY7qPCqsdltbNJuaOe923+mo//f6V8Qbsw3" crossorigin="anonymous"></script>
+    <style>
     body {
         background-color: #f8f9fa;
         background-image: url("images/bg2.jpg");
@@ -64,7 +164,53 @@ if (isset($_POST['login'])) {
         background-size: cover;
         height: 100vh;
     }
+    .google-icon {
+            width: 18px;
+            height: 18px;
+        }
 
+        /* Sign in with Google button styling */
+        .sign-in-button {
+            background-color: #E74C3C; /* Red background color */
+            color: #ffffff; /* White text color */
+            border: none;
+            border-radius: 50px; /* Make the button round */
+            padding: 10px 20px; /* Adjust padding as needed */
+            cursor: pointer;
+            display: flex;
+            align-items: center; /* Vertically center icon and text */
+            width:328px;
+        }
+
+        /* White circle surrounding the icon */
+        .icon-circle {
+            background-color: #ffffff; /* White circle background color */
+            border-radius: 60%; /* Make it a circle */
+            padding: 5px; /* Adjust padding as needed */
+            margin-right: 10px; /* Adjust the spacing between icon and text */
+            margin-left:60px;
+        }
+
+        /* Hover effect */
+        .sign-in-button:hover {
+            background-color: #C0392B; /* Slightly darker red on hover */
+        }
+        .hr-with-text {
+            position: relative;
+            border: none;
+            height: 1px; /* Adjust the height of the line as needed */
+            background-color: #ccc; /* Adjust the color of the line as needed */
+        }
+
+        /* Style for the "or" text */
+        .or-text {
+            position: absolute;
+            top: -10px; /* Adjust the vertical position of the text */
+            left: 50%;
+            background-color: #fff; /* Background color to hide part of the line */
+            padding: 0 10px; /* Adjust padding as needed */
+            transform: translateX(-50%); /* Center the text horizontally */
+        }
     .container {
         margin-top: 130px;
         border-radius: 20px;
@@ -140,6 +286,8 @@ if (isset($_POST['login'])) {
         margin-top: 5px;
     }
 </style>
+</head>
+
 <body>
     <div class="container">
         <div class="row">
@@ -153,8 +301,20 @@ if (isset($_POST['login'])) {
                             <input type="password" name="password" id="id_password" placeholder="Password">
                             <p id="passwordError" class="error"></p>
                             <div class="g-recaptcha" data-sitekey="6Legj5MnAAAAAMy8KZAXmeroGPQFM7hdMFE_E9zL"
-                                 style="align-items: center;"></div><br>
+                                 style="align-items: center;width:330px;"></div><br>
                             <button type="submit" name = "login" class="btn btn-login" id="log" style="color:#ede5e5;">Login</button>
+                            <hr class="hr-with-text">
+    <span class="or-text">or</span>
+    <button class="sign-in-button">
+        <div class="icon-circle">
+       
+        <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" alt="Google icon" class="google-icon">
+    </a>
+      
+        </div>
+        <a href="<?= $gclient->createAuthUrl() ?>" class="btn btn btn-primary btn-flat rounded-0" style = "text-decoration:none; color:white;">Login with Google</a>   
+       
+    </button>
                             <br>
                             <table>
                                 <tr>
@@ -171,55 +331,7 @@ if (isset($_POST['login'])) {
                 </div>
             </div>
         </div>
-        <script>
-            document.addEventListener("DOMContentLoaded", function () {
-                const emailInput = document.getElementById("id_email");
-                const emailError = document.getElementById("emailError");
-                const passwordInput = document.getElementById("id_password");
-                const passwordError = document.getElementById("passwordError");
-                const loginForm = document.getElementById("loginForm");
-
-                loginForm.addEventListener("submit", function (event) {
-                    if (!isValidLoginForm()) {
-                        event.preventDefault();
-                        alert("Please fill in all fields correctly.");
-                    }
-                });
-
-                function isValidLoginForm() {
-                    const emailInput = document.getElementById("id_email");
-                    const passwordInput = document.getElementById("id_password");
-
-                    return (
-                        isValidEmail(emailInput.value) &&
-                        isValidPassword(passwordInput.value)
-                    );
-                }
-
-                emailInput.addEventListener("input", function () {
-                    if (!isValidEmail(emailInput.value)) {
-                        emailError.textContent = "Invalid email format";
-                    } else {
-                        emailError.textContent = "";
-                    }
-                });
-
-                passwordInput.addEventListener("input", function () {
-                    const passPattern = /^[a-zA-Z0-9!@#$%^&*]{6,16}$/;
-                        if (!passPattern.test(passwordInput.value)) {
-                            passwordError.textContent = "Must contain at least 8 characters with a uppercase, lowercase, special character, and a number";
-                        } else {
-                            passwordError.textContent = "";
-                        }
-
-                });
-
-                function isValidEmail(email) {
-                    const emailPattern = /^[a-zA-Z0-9._-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,4}$/;
-                    return emailPattern.test(email);
-                }
-            });
-        </script>
+        
     </div>
 </body>
 </html>

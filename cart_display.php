@@ -15,15 +15,19 @@
     </style>
 </head>
 <body>
-
+<?php 
+include("connection.php");
+if (session_status() === PHP_SESSION_NONE) {
+    session_start();
+}
+?>
 <?php include('customer_header.php')?>
 
 <section class="mt-5">
     <div class="container">
         <h2>Your Cart</h2>
         <?php
-        include("connection.php");
-        session_start();
+        
         if (!isset($_SESSION['user_id'])) {
             header('location:./');
         }
@@ -56,7 +60,7 @@
                         <tr>
                             <th>Image</th>
                             <th>Product Name</th>
-                            <th>Stocks Left</th>
+                            
                             <th>Quantity</th>
                             <th>Price Per Unit</th>
                             <th>Total Price</th>
@@ -68,7 +72,7 @@
                             <tr>
                                 <td><img src="data:image/jpeg;base64,<?php echo base64_encode($item['image']); ?>" alt="<?php echo $item['product_name']; ?>" class="product-image"></td>
                                 <td><?php echo $item['product_name']; ?></td>
-                                <td><?php echo $item['stock']; ?></td>
+                                
                                 <td><input type="number" class="quantity-input" value="<?php echo $item['quantity']; ?>" min="1" max="<?php echo $item['stock']; ?>"></td>
                                 <td>Rs <?php echo $item['new_price']; ?></td>
                                 <td>Rs <span class="total-price"><?php echo $item['quantity'] * $item['new_price']; ?></span></td>

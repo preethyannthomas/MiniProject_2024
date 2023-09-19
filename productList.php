@@ -16,9 +16,18 @@
     <link rel="stylesheet" href="css/templatemo-hexashop.css">
     <link rel="stylesheet" href="css/owl-carousel.css">
     <link rel="stylesheet" href="css/lightbox.css">
+    <style>
+        img{
+           height:390px;
+        }
+    </style>
 </head>
 <body>
-<?php include('customer_header.php') ?>
+<?php
+session_start();
+include('connection.php');
+include('customer_header.php');
+?>
 
 <div class="container mt-4">
     <br><br><br><br>
@@ -65,7 +74,7 @@
             
             if ($result && mysqli_num_rows($result) > 0) {
                 while ($row = mysqli_fetch_assoc($result)) {
-                    echo '<div class="col-md-4">
+                    echo '<div class="col-md-4 ">
                             <div class="card mb-4 shadow-sm">
                             <img src="data:image/jpeg;base64,' . base64_encode($row['image']) . '" class="card-img-top" alt="' . $row['product_name'] . '">
                                 <div class="card-body">

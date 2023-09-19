@@ -5,17 +5,26 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Wishlist</title>
     <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+    <style>
+        img{
+           height:390px;
+        }
+    </style>
 </head>
 <body>
-
+    <?php
+include("connection.php");
+        if (session_status() === PHP_SESSION_NONE) {
+            session_start();
+        }
+?>
 <?php include('customer_header.php')?>
 <section>
     <br><br><br><br>
     <div class="container mt-4">
     <div class="row">
         <?php
-        include("connection.php"); 
-        session_start();
+        include("connection.php");
             if (!isset($_SESSION['user_id'])) {
                 header('location:./');
             }

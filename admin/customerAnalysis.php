@@ -1,54 +1,49 @@
-<!-- PHP Code -->
 <?php
 // Include the database connection file
 include("../connection.php");
 
+// Fetch seller's products from tbl_product
 session_start();
 if (!isset($_SESSION['user_id'])) {
     header('location:./');
     exit();
 }
 
-$user_id = $_SESSION['user_id'];
-
-// Fetch user information from tbl_user
-$userQuery = "SELECT email FROM tbl_user WHERE user_id = $user_id";
-$userResult = $conn->query($userQuery);
-
-if ($userResult->num_rows == 1) {
-    $userRow = $userResult->fetch_assoc();
-}
-
-// Fetch company information from tbl_admin
-$companyQuery = "SELECT * FROM tbl_admin WHERE user_id = $user_id";
-$companyResult = $conn->query($companyQuery);
-
-if ($companyResult->num_rows == 1) {
-    $companyRow = $companyResult->fetch_assoc();
-}
-
-// Fetch address details from tbl_address
-$addressQuery = "SELECT * FROM tbl_address WHERE user_id = $user_id";
-$addressResult = $conn->query($addressQuery);
-
-if ($addressResult->num_rows == 1) {
-    $addressRow = $addressResult->fetch_assoc();
-}else {
-    // Address not present, set default values
-    $addressRow = [
-        'address' => '',
-        'area' => '',
-        'city' => '',
-        'state' => '',
-        'pincode' => '',
-        'mobile_number' => '',
-    ];
-}
 ?>
+<?php
+// Include the database connection file
+include("../connection.php");
+
+// Function to fetch data from the database and return it as an associative array
+function fetchData($conn, $query) {
+    $result = $conn->query($query);
+    $data = [];
+
+    if ($result) {
+        while ($row = $result->fetch_assoc()) {
+            $data[] = $row;
+        }
+    } else {
+        echo "Error executing query: " . $conn->error;
+    }
+
+    return $data;
+}
+
+// Fetch data for Product Sales Analysis
+$productQuery = "SELECT p.product_name, SUM(o.total_amount) AS product_sales 
+                 FROM tbl_product p
+                 INNER JOIN tbl_orderdetail od ON p.product_id = od.product_id
+                 INNER JOIN tbl_order o ON od.order_id = o.order_id
+                 GROUP BY p.product_name";
+$productData = fetchData($conn, $productQuery);
+?>
+
 <!DOCTYPE html>
 <html>
 <head>
-    <title>Customer Analysis</title>
+    <title>Product Sales Analysis</title>
+    <!-- Include Chart.js library -->
     <link rel="stylesheet" href="../libs/bower/font-awesome/css/font-awesome.min.css">
   <link rel="stylesheet" href="../libs/bower/material-design-iconic-font/dist/css/material-design-iconic-font.css">
   <!-- build:css assets/css/app.min.css -->
@@ -58,9 +53,21 @@ if ($addressResult->num_rows == 1) {
   <link rel="stylesheet" href="../assets/css/bootstrap.css">
   <link rel="stylesheet" href="../assets/css/core.css">
   <link rel="stylesheet" href="../assets/css/app.css">
-    <link href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
+  <!-- endbuild -->
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Raleway:400,500,600,700,800,900,300">
+  <script src="../libs/bower/breakpoints.js/dist/breakpoints.min.js"></script>
+  <script>
+    Breakpoints();
+  </script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    
+    <style>
+        /* Style the container to control chart size */
+        .chart-container {
+            width: 500px; /* Adjust width as needed */
+            height: 5; /* Adjust height as needed */
+            margin: 0 auto; /* Center the chart within the container */
+        }
+    </style>
 </head>
 <body class="menubar-left menubar-unfold menubar-light theme-primary">
 <!--============= start main area -->
@@ -68,104 +75,71 @@ if ($addressResult->num_rows == 1) {
 <?php include_once('header.php');?>
 
 <?php include_once('sidebar.php');?>
-
-    <div class="container mt-4">
-        <div class="row">
-            <div class="col-md-6">
-                <!-- Monthly Analysis Chart -->
-                <h3>Monthly Analysis</h3>
-                <canvas id="monthlyAnalysisChart"></canvas>
-            </div>
-            <div class="col-md-6">
-                <!-- Quarterly Analysis Line Chart -->
-                <h3>Quarterly Analysis (Line Chart)</h3>
-                <canvas id="quarterlyAnalysisChart" width="400" height="200"></canvas>
-            </div>
-        </div>
-        <div class="row">
-            <div class="col-md-6">
-                <!-- Yearly Analysis Chart -->
-                <h3>Yearly Analysis</h3>
-                <canvas id="yearlyAnalysisChart"></canvas>
-            </div>
-            <div class="col-md-6">
-                <!-- Product Analysis (Pie Chart) -->
-                <h3>Product Analysis</h3>
-                <canvas id="productAnalysisChart"></canvas>
-            </div>
+<main id="app-main" class="app-main">
+        <div class="wrap">
+            <section class="app-content">
+                <div class="row">
+                    <div class="col-md-12">
+                        <div class="widget">
+                            <header class="widget-header">
+                                <h3 class="widget-title">Total Purchases</h3>
+                            </header><!-- .widget-header -->
+                            <hr class="widget-separator">
+                            <div class="widget-body">
+                                <div class="row">
+    <div class="container">
+        <!-- Product Sales Analysis Pie Chart -->
+        <div class="chart-container">
+        <canvas id="productSalesChart" ></canvas>
         </div>
     </div>
-
+    </div>
+                            </div><!-- .widget-body -->
+                        </div><!-- .widget -->
+                    </div><!-- END column -->
+                </div><!-- .row -->
+            </section><!-- #dash-content -->
+        </div><!-- .wrap -->
+        <!-- APP FOOTER -->
+        <?php include_once('footer.php');?>
+        <!-- /#app-footer -->
+    </main>
     <script>
-        // Sample data for Monthly Analysis
-        const monthlyData = {
-            labels: ["January", "February", "March", "April", "May"],
-            datasets: [{
-                label: "Number of Customers",
-                backgroundColor: "rgba(75, 192, 192, 0.2)",
-                borderColor: "rgba(75, 192, 192, 1)",
-                borderWidth: 1,
-                data: [150, 200, 180, 220, 250],
-            }],
-        };
-
-        // Sample data for Quarterly Analysis (Line Chart)
-        const quarterlyData = {
-            labels: ["Q1", "Q2", "Q3", "Q4"],
-            datasets: [{
-                label: "Number of Customers",
-                borderColor: "rgba(255, 99, 132, 1)",
-                borderWidth: 2,
-                fill: false,
-                data: [300, 450, 400, 350],
-            }],
-        };
-
-        // Sample data for Yearly Analysis
-        const yearlyData = {
-            labels: ["2021", "2022", "2023"],
-            datasets: [{
-                label: "Number of Customers",
-                backgroundColor: "rgba(54, 162, 235, 0.2)",
-                borderColor: "rgba(54, 162, 235, 1)",
-                borderWidth: 1,
-                data: [1500, 1800, 2100],
-            }],
-        };
-
-        // Sample data for Product Analysis (Pie Chart)
-        const productData = {
-            labels: ["Product A", "Product B", "Product C"],
-            datasets: [{
-                data: [30, 45, 25],
-                backgroundColor: ["#FF5733", "#33FF57", "#3357FF"],
-            }],
-        };
-
-        // Function to create a chart
-        function createChart(canvasId, chartType, chartData) {
-            const ctx = document.getElementById(canvasId).getContext("2d");
-            return new Chart(ctx, {
+        // Create a function to generate a chart
+        function createChart(canvasId, chartType, data) {
+            var ctx = document.getElementById(canvasId).getContext('2d');
+            var myChart = new Chart(ctx, {
                 type: chartType,
-                data: chartData,
-                options: {
-                    scales: {
-                        y: {
-                            beginAtZero: true,
-                        },
-                    },
-                },
+                data: data
             });
         }
 
-        // Create all four charts
-        createChart("monthlyAnalysisChart", "bar", monthlyData);
-        createChart("quarterlyAnalysisChart", "line", quarterlyData);
-        createChart("yearlyAnalysisChart", "bar", yearlyData);
-        createChart("productAnalysisChart", "pie", productData);
-    </script>
+        // Data for Product Sales Analysis Pie Chart
+        var productData = {
+            labels: <?php echo json_encode(array_column($productData, 'product_name')); ?>,
+            datasets: [{
+                data: <?php echo json_encode(array_column($productData, 'product_sales')); ?>,
+                backgroundColor: [
+                    'rgba(255, 99, 132, 0.7)',
+                    'rgba(54, 162, 235, 0.7)',
+                    'rgba(255, 206, 86, 0.7)',
+                    'rgba(75, 192, 192, 0.7)',
+                    'rgba(153, 102, 255, 0.7)'
+                ],
+                borderColor: [
+                    'rgba(255, 99, 132, 1)',
+                    'rgba(54, 162, 235, 1)',
+                    'rgba(255, 206, 86, 1)',
+                    'rgba(75, 192, 192, 1)',
+                    'rgba(153, 102, 255, 1)'
+                ],
+                borderWidth: 1
+            }]
+        };
 
-    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+        // Create Product Sales Analysis Pie Chart
+        createChart("productSalesChart", "pie", productData);
+    </script>
     <script src="../libs/bower/jquery/dist/jquery.js"></script>
   <script src="../libs/bower/jquery-ui/jquery-ui.min.js"></script>
   <script src="../libs/bower/jQuery-Storage-API/jquery.storageapi.min.js"></script>

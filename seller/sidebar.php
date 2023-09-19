@@ -60,7 +60,7 @@ if (!isset($_SESSION['user_id'])) {
     <div class="menubar-scroll-inner">
       <ul class="app-menu">
         <li class="has-submenu">
-          <a href="">
+          <a href="sellerProfile.php">
             <i class="menu-icon zmdi zmdi-view-dashboard zmdi-hc-lg"></i>
             <span class="menu-text">Dashboard</span>
             
@@ -78,13 +78,17 @@ if (!isset($_SESSION['user_id'])) {
             <li><a href="dashboard.php"><span class="menu-text">View Product</span></a></li>
           </ul>
         </li>       
-
         <li class="has-submenu">
-          <a href="change-password.php">
+          <a href="javascript:void(0)" class="submenu-toggle">
             <i class="menu-icon zmdi zmdi-view-dashboard zmdi-hc-lg"></i>
             <span class="menu-text">Orders</span>
+            <i class="menu-caret zmdi zmdi-hc-sm zmdi-chevron-right"></i>
           </a>
-        </li>
+          <ul class="submenu">
+            <li><a href="shipping.php"><span class="menu-text">Shipped</span></a></li>
+            <li><a href="pending.php"><span class="menu-text">Pending</span></a></li>
+          </ul>
+        </li>  
         
         <li class="has-submenu">
           <a href="">

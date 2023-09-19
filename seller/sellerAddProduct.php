@@ -1,3 +1,119 @@
+<?php
+session_start();
+include("../connection.php"); // Include your database connection
+
+if (!isset($_SESSION['user_id'])) {
+    header('location: ./');
+    exit();
+}
+
+// Fetch user_id from tbl_user
+$userQuery = "SELECT user_id FROM tbl_user WHERE user_id = ?";
+$userStmt = mysqli_prepare($conn, $userQuery);
+mysqli_stmt_bind_param($userStmt, "i", $_SESSION['user_id']);
+
+if (mysqli_stmt_execute($userStmt)) {
+    $userResult = mysqli_stmt_get_result($userStmt);
+    $userRow = mysqli_fetch_assoc($userResult);
+    $userId = $userRow['user_id'];
+
+    // Fetch seller_id from tbl_seller where user_id = user_id
+    $sellerQuery = "SELECT seller_id FROM tbl_seller WHERE user_id = ?";
+    $sellerStmt = mysqli_prepare($conn, $sellerQuery);
+    mysqli_stmt_bind_param($sellerStmt, "i", $userId);
+
+    if (mysqli_stmt_execute($sellerStmt)) {
+        $sellerResult = mysqli_stmt_get_result($sellerStmt);
+        $sellerRow = mysqli_fetch_assoc($sellerResult);
+        $sellerId = $sellerRow['seller_id'];
+
+        // Check if the form is submitted
+        if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['submit'])) {
+            // Retrieve data from the form
+            $productName = $_POST['productName'];
+            $category_id = $_POST['category'];
+            $subcategory_id = $_POST['subcategory'];
+            $material = $_POST['material'];
+            $dimension = $_POST['dimension'];
+            $weight = $_POST['weight'];
+            $usageDescription = $_POST['usage'];
+            $careInstruction = $_POST['description'];
+
+            // Get the count of rows
+            $count = count($_POST['size']);
+
+            // Initialize variables for the first product and first product detail
+            $firstProductId = null;
+            $firstProductDetailId = null;
+
+            // Loop through each row
+            for ($i = 0; $i < $count; $i++) {
+                // Retrieve data for the current row
+                $size = $_POST['size'][$i];
+                $color = $_POST['color'][$i];
+                $stock = $_POST['stock'][$i];
+                $price = $_POST['price'][$i];
+                $imageData = file_get_contents($_FILES['image']['tmp_name'][$i]);
+
+                // Insert data into tbl_product for the first row
+                if ($i == 0) {
+                    $insertProductQuery = "INSERT INTO tbl_product (seller_id, subcategory_id, product_name, price, is_available, image) VALUES (?, ?, ?, ?, 1, ?)";
+                    $stmt = mysqli_prepare($conn, $insertProductQuery);
+                    mysqli_stmt_bind_param($stmt, "iisds", $sellerId, $subcategory_id, $productName, $price, $imageData);
+
+                    if (mysqli_stmt_execute($stmt)) {
+                        $firstProductId = mysqli_insert_id($conn);
+
+                        // Insert data into tbl_productdescription for the first row
+                        $insertDescriptionQuery = "INSERT INTO tbl_productdescription (product_id, colour, usage_description, weight, care_instruction, material, dimension) VALUES (?, ?, ?, ?, ?, ?, ?)";
+                        $stmt = mysqli_prepare($conn, $insertDescriptionQuery);
+                        mysqli_stmt_bind_param($stmt, "issssss", $firstProductId, $color, $usageDescription, $weight, $careInstruction, $material, $dimension);
+
+                        if (mysqli_stmt_execute($stmt)) {
+                            $firstProductDetailId = mysqli_insert_id($conn);
+                        } else {
+                            echo '<script>alert("Error inserting product description for the first row: ' . mysqli_error($conn) . '")</script>';
+                            exit;
+                        }
+                    } else {
+                        echo '<script>alert("Error inserting product for the first row: ' . mysqli_error($conn) . '")</script>';
+                        exit;
+                    }
+                }
+
+                // Insert data into tbl_productdetail
+                $insertDetailQuery = "INSERT INTO tbl_productdetail (size, colour, stock, is_available, product_id, new_price, image) VALUES (?, ?, ?, 1, ?, ?, ?)";
+                $stmt = mysqli_prepare($conn, $insertDetailQuery);
+                mysqli_stmt_bind_param($stmt, "ssissb", $size, $color, $stock, $firstProductId, $price, $imageData);
+
+                if (mysqli_stmt_execute($stmt)) {
+                    // Insert all images associated with the current row into tbl_image using detail_id
+                    $productDetailId = mysqli_insert_id($conn);
+                    $insertImageQuery = "INSERT INTO tbl_image (detail_id, image) VALUES (?, ?)";
+                    $stmt = mysqli_prepare($conn, $insertImageQuery);
+                    mysqli_stmt_bind_param($stmt, "is", $productDetailId, $imageData);
+
+                    if (!mysqli_stmt_execute($stmt)) {
+                        echo '<script>alert("Error inserting image for row ' . ($i + 1) . ': ' . mysqli_error($conn) . '")</script>';
+                        exit;
+                    }
+                } else {
+                    echo '<script>alert("Error inserting product detail for row ' . ($i + 1) . ': ' . mysqli_error($conn) . '")</script>';
+                    exit;
+                }
+            }
+
+            // Respond with a success message and redirect to dashboard.php
+            echo '<script>alert("Product(s) added successfully.")</script>';
+            header('location: dashboard.php');
+            exit();
+        }
+    }
+} else {
+    echo '<script>alert("Error fetching seller_id: ' . mysqli_error($conn) . '")</script>';
+}
+?>
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -72,117 +188,7 @@
     </style>
 </head>
 <body class="menubar-left menubar-unfold menubar-light theme-primary style='background-color: white'">
-<?php
-include("../connection.php");
-session_start();
-if (!isset($_SESSION['user_id'])) {
-    header('location: ./');
-    exit();
-}
 
-if (isset($_POST['submit'])) {
-    $user_id = $_SESSION['user_id'];
-    $name = $_POST["productName"];
-    $category_id = $_POST["category"];
-    $subcategory_id = $_POST["subcategory"];
-    $price = $_POST["price"];
-
-    // Retrieve seller_id from tbl_seller based on user_id
-    $sellerQuery = "SELECT seller_id FROM tbl_seller WHERE user_id = ?";
-    $stmt = mysqli_prepare($conn, $sellerQuery);
-    mysqli_stmt_bind_param($stmt, "i", $user_id);
-
-    if (mysqli_stmt_execute($stmt)) {
-        $sellerResult = mysqli_stmt_get_result($stmt);
-        if ($sellerResult && mysqli_num_rows($sellerResult) == 1) {
-            $sellerRow = mysqli_fetch_assoc($sellerResult);
-            $seller_id = $sellerRow["seller_id"];
-
-            // Handle image upload for tbl_product
-            if (isset($_FILES['image']) && !empty($_FILES['image']['name'][0])) {
-                $imageDataArray = array();
-
-                foreach ($_FILES['image']['tmp_name'] as $key => $imageTmpNameArray) {
-                    $imageData = array();
-
-                    foreach ($imageTmpNameArray as $imageTmpName) {
-                        $imageData[] = file_get_contents($imageTmpName);
-                    }
-
-                    $imageDataArray[] = $imageData;
-
-                    // Insert data into tbl_product for the first image
-                    if ($key == 0) {
-                        $insertProductQuery = "INSERT INTO tbl_product (seller_id, subcategory_id, product_name, price, is_available, image) VALUES (?, ?, ?, ?, 1, ?)";
-                        $stmt = mysqli_prepare($conn, $insertProductQuery);
-                        mysqli_stmt_bind_param($stmt, "iissb", $seller_id, $subcategory_id, $name, $price, $imageDataArray[$key][0]);
-
-                        if (mysqli_stmt_execute($stmt)) {
-                            // Get the newly inserted product ID
-                            $productId = mysqli_insert_id($conn);
-                        } else {
-                            echo '<script>alert("Error inserting product: ' . mysqli_error($conn) . '")</script>';
-                            exit; // Exit the script on error
-                        }
-                    }
-
-                    // Insert data into tbl_productdetail for each row
-                    $size = $_POST['size'][$key];
-                    $colour = $_POST['color'][$key];
-                    $stock = $_POST['stock'][$key];
-                    $new_price = $_POST['price'][$key];
-
-                    $insertProductDetailQuery = "INSERT INTO tbl_productdetail (size, colour, stock, is_available, product_id, new_price) VALUES (?, ?, ?, 1, ?, ?)";
-                    $stmt = mysqli_prepare($conn, $insertProductDetailQuery);
-                    mysqli_stmt_bind_param($stmt, "ssdii", $size, $colour, $stock, $productId, $new_price);
-
-                    if (mysqli_stmt_execute($stmt)) {
-                        // Get the detail ID for the current row
-                        $detailId = mysqli_insert_id($conn);
-
-                        // Insert all images into tbl_image for the current row
-                        foreach ($imageDataArray[$key] as $imageData) {
-                            $imageDataBlob = mysqli_real_escape_string($conn, $imageData);
-
-                            $insertImageQuery = "INSERT INTO tbl_image (image, detail_id) VALUES (?, ?)";
-                            $stmt = mysqli_prepare($conn, $insertImageQuery);
-                            mysqli_stmt_bind_param($stmt, "si", $imageDataBlob, $detailId);
-
-                            if (!mysqli_stmt_execute($stmt)) {
-                                echo '<script>alert("Error inserting image: ' . mysqli_error($conn) . '")</script>';
-                                exit; // Exit the script on error
-                            }
-                        }
-
-                        // Insert colour into tbl_colour if it doesn't exist
-                        $insertColourQuery = "INSERT IGNORE INTO tbl_colour (colour) VALUES (?)";
-                        $stmt = mysqli_prepare($conn, $insertColourQuery);
-                        mysqli_stmt_bind_param($stmt, "s", $colour);
-                        mysqli_stmt_execute($stmt);
-                    } else {
-                        echo '<script>alert("Error inserting product detail: ' . mysqli_error($conn) . '")</script>';
-                        exit; // Exit the script on error
-                    }
-                }
-
-                // Respond with a success message and redirect to dashboard.php
-                echo '<script>alert("Product added successfully.")</script>';
-                header('location: dashboard.php');
-                exit();
-            } else {
-                echo '<script>alert("Product image is missing.")</script>';
-            }
-        } else {
-            echo '<script>alert("Seller not found for the logged-in user.")</script>';
-        }
-    } else {
-        echo '<script>alert("Error retrieving seller data: ' . mysqli_error($conn) . '")</script>';
-    }
-}
-
-// Close the database connection
-mysqli_close($conn);
-?>
 <!-- Rest of your HTML code remains the same -->
     <?php include_once('header.php');?>
 
@@ -386,81 +392,80 @@ mysqli_close($conn);
 <!-- Include jQuery -->
 <!-- <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script> -->
 <script>
-    document.getElementById("addRow").addEventListener("click", function () {
-        var table = document.getElementById("productTable");
-        var row = table.insertRow(-1);
-        var cell1 = row.insertCell(0);
-        var cell2 = row.insertCell(1);
-        var cell3 = row.insertCell(2);
-        var cell4 = row.insertCell(3);
-        var cell5 = row.insertCell(4);
+document.getElementById("addRow").addEventListener("click", function () {
+    var table = document.getElementById("productTable");
+    var row = table.insertRow(-1);
+    var cell1 = row.insertCell(0);
+    var cell2 = row.insertCell(1);
+    var cell3 = row.insertCell(2);
+    var cell4 = row.insertCell(3);
+    var cell5 = row.insertCell(4);
 
-        cell1.innerHTML = `
-            <select class="form-control" name="size[]" required default="Free Size">
-                <option value="" disabled selected>Select Size</option>
-                <option value="S">S</option>
-                <option value="XS">XS</option>
-                <option value="X">X</option>
-                <option value="XXL">XXL</option>
-                <option value="L">L</option>
-                <option value="M">M</option>
-                <option value="Free Size">Free Size</option>
-            </select>`;
-        cell2.innerHTML = `
-            <select class="form-control" name="color[]" required>
-                <option value="" disabled selected>Select Colour</option>
-                <?php
-                // Query to fetch colors from your database (adjust this query as needed)
-                $sql = "SELECT colour_id, colour FROM tbl_colour";
-                $result = $conn->query($sql);
+    cell1.innerHTML = `
+        <select class="form-control" name="size[]" required default="Free Size">
+            <option value="" disabled selected>Select Size</option>
+            <option value="S">S</option>
+            <option value="XS">XS</option>
+            <option value="X">X</option>
+            <option value="XXL">XXL</option>
+            <option value="L">L</option>
+            <option value="M">M</option>
+            <option value="Free Size">Free Size</option>
+        </select>`;
+    cell2.innerHTML = `
+        <select class="form-control" name="color[]" required>
+            <option value="" disabled selected>Select Colour</option>
+            <?php
+            // Query to fetch colors from your database (adjust this query as needed)
+            $sql = "SELECT colour_id, colour FROM tbl_colour";
+            $result = $conn->query($sql);
 
-                if ($result->num_rows > 0) {
-                    while ($row = $result->fetch_assoc()) {
-                        $colour_id = $row['colour_id'];
-                        $colour_name = $row['colour'];
-                        echo "<option value='$colour_name'>$colour_name</option>";
-                    }
-                } else {
-                    echo "<option value='' disabled>No colours available</option>";
+            if ($result->num_rows > 0) {
+                while ($row = $result->fetch_assoc()) {
+                    $colour_id = $row['colour_id'];
+                    $colour_name = $row['colour'];
+                    echo "<option value='$colour_name'>$colour_name</option>";
                 }
-                ?>
-            </select>`;
-        cell3.innerHTML = '<input type="number" min="1" name="stock[]" required class="form-control">';
-        cell4.innerHTML = '<input type="number" min="1" name="price[]" required class="form-control">';
-        cell5.innerHTML = '<input type="file" accept="image/*" name="image[]" required class="form-control">' +
-            '<button type="button" class="add-image btn btn-primary">Add Image</button> &nbsp;' +
-            '<button type="button" class="remove-row btn btn-danger">Remove Row</button>';
-    });
+            } else {
+                echo "<option value='' disabled>No colours available</option>";
+            }
+            ?>
+        </select>`;
+    cell3.innerHTML = '<input type="number" min="1" name="stock[]" required class="form-control">';
+    cell4.innerHTML = '<input type="number" min="1" name="price[]" required class="form-control">';
+    cell5.innerHTML = '<input type="file" accept="image/*" name="image[]" required class="form-control">' +
+        '<button type="button" class="add-image btn btn-primary">Add Image</button> &nbsp;' +
+        '<button type="button" class="remove-row btn btn-danger">Remove Row</button>';
+});
 
-    document.getElementById("productTable").addEventListener("click", function (e) {
-        if (e.target && e.target.className == "remove-row btn btn-danger") {
-            var row = e.target.parentNode.parentNode;
-            row.parentNode.removeChild(row);
-        } else if (e.target && e.target.className == "add-image btn btn-primary") {
-            var cell = e.target.parentNode;
-            var inputFile = document.createElement("input");
-            inputFile.type = "file";
-            inputFile.name = "image[]";
-            inputFile.className = "form-control";
-            inputFile.accept = "image/*";
-            var removeImageBtn = document.createElement("button");
-            removeImageBtn.type = "button";
-            removeImageBtn.className = "remove-image btn btn-danger";
-            removeImageBtn.textContent = "Remove Image";
-            removeImageBtn.addEventListener("click", function () {
-                cell.removeChild(inputFile);
-                cell.removeChild(removeImageBtn);
-            });
-            cell.insertBefore(inputFile, e.target);
-            cell.insertBefore(removeImageBtn, e.target);
-        } else if (e.target && e.target.className == "remove-image btn btn-danger") {
-            var cell = e.target.parentNode;
-            cell.removeChild(e.target); // Remove the "Remove Image" button
-            cell.removeChild(cell.querySelector('input[type="file"]'));
-        }
-    });
+document.getElementById("productTable").addEventListener("click", function (e) {
+    if (e.target && e.target.className == "remove-row btn btn-danger") {
+        var row = e.target.parentNode.parentNode;
+        row.parentNode.removeChild(row);
+    } else if (e.target && e.target.className == "add-image btn btn-primary") {
+        var cell = e.target.parentNode;
+        var inputFile = document.createElement("input");
+        inputFile.type = "file";
+        inputFile.name = "image[]";
+        inputFile.className = "form-control";
+        inputFile.accept = "image/*";
+        var removeImageBtn = document.createElement("button");
+        removeImageBtn.type = "button";
+        removeImageBtn.className = "remove-image btn btn-danger";
+        removeImageBtn.textContent = "Remove Image";
+        removeImageBtn.addEventListener("click", function () {
+            cell.removeChild(inputFile);
+            cell.removeChild(removeImageBtn);
+        });
+        cell.insertBefore(inputFile, e.target);
+        cell.insertBefore(removeImageBtn, e.target);
+    } else if (e.target && e.target.className == "remove-image btn btn-danger") {
+        var cell = e.target.parentNode;
+        cell.removeChild(e.target); // Remove the "Remove Image" button
+        cell.removeChild(cell.querySelector('input[type="file"]'));
+    }
+});
 </script>
-
 <script>
 
 function loadSubcategories() {

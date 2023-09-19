@@ -1,3 +1,19 @@
+<?php
+session_start(); // Start the session at the very beginning
+
+// Include necessary files and define functions
+
+// Check if the user is authenticated
+if (!isset($_SESSION['user_id'])) {
+    header('location:./');
+    exit(); // Ensure that you exit after a header redirect
+}
+
+require 'connection.php'; // Require the connection script here to ensure it's loaded
+
+// Rest of your PHP code for rendering the profile page
+// ...
+?>
 <!DOCTYPE html>
 <html lang="en">
 <html>
@@ -24,10 +40,7 @@
 
            <br> 
             <?php
-            session_start();
-            if (!isset($_SESSION['user_id'])) {
-                header('location:./');
-            }
+           
             require 'connection.php'; 
             $user_id = $_SESSION['user_id'];
             $query2 = "SELECT * FROM tbl_user WHERE user_id = '$user_id'";
@@ -58,7 +71,7 @@
                 echo '<p class="card-text"><tr><td>Mail id: </td><td class="align-right">' .  $mail . '</td></p>';
                 echo '<p class="card-text"><tr><td>Contact number: &emsp; &emsp; &emsp;</td><td class="align-right">' . $row1['contact_no'] . '</td></p>';
                 echo '<p class="card-text"><tr><td>Password: </td><td class="align-right">*********</td></table></p></div>';
-             
+              echo '<a href = "changePassword.php">Change Password</a>';
                 echo '</div>';
             }
             

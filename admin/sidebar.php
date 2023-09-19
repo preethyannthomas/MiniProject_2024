@@ -60,7 +60,7 @@ if (!isset($_SESSION['user_id'])) {
     <div class="menubar-scroll-inner">
       <ul class="app-menu">
         <li class="has-submenu">
-          <a href="">
+          <a href="adminProfile.php">
             <i class="menu-icon zmdi zmdi-view-dashboard zmdi-hc-lg"></i>
             <span class="menu-text">Dashboard</span>
             
@@ -74,7 +74,7 @@ if (!isset($_SESSION['user_id'])) {
             <i class="menu-caret zmdi zmdi-hc-sm zmdi-chevron-right"></i>
           </a>
           <ul class="submenu">
-            <li><a href="adminAddProduct.php"><span class="menu-text">Sales Analysis</span></a></li>
+            <li><a href="salesAnalysis.php"><span class="menu-text">Sales Analysis</span></a></li>
             <li><a href="customerAnalysis.php"><span class="menu-text">Customer Analysis</span></a></li>
           </ul>
         </li>       
