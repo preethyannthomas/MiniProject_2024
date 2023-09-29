@@ -63,7 +63,6 @@ function isProductInWishlist($productId, $customerId)
     }
 }
 ?>
-
 <!DOCTYPE html>
 <html lang="en">
 
@@ -74,11 +73,7 @@ function isProductInWishlist($productId, $customerId)
     <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.4/jquery.min.js"></script>
 
-    <!-- Include xzoom CSS and JS -->
-    <link rel="stylesheet" href="https://unpkg.com/xzoom/dist/xzoom.css">
-    <script src="https://unpkg.com/xzoom/dist/xzoom.min.js"></script>
-
-    <!-- Include fancybox CSS and JS -->
+    <!-- Include FancyBox CSS and JS -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/fancybox/3.5.7/jquery.fancybox.min.css">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/fancybox/3.5.7/jquery.fancybox.min.js"></script>
 
@@ -140,23 +135,24 @@ function isProductInWishlist($productId, $customerId)
             border: 1px solid #d4d4d4;
             width: 40px;
             height: 40px;
+            background: rgba(0, 0, 0, 0.4);
+            display: none;
         }
 
         .img-zoom-result {
             border: 1px solid #d4d4d4;
-            width: 300px;
-            height: 300px;
+            width: 500px;
+            height: 500px;
             background-size: cover;
             background-repeat: no-repeat;
+            display: none;
+            position: absolute;
         }
     </style>
-
 </head>
 
 <body>
-
     <?php include('customer_header.php')?>
-
     <section>
         <br><br><br><br><br>
         <div class="container">
@@ -164,19 +160,22 @@ function isProductInWishlist($productId, $customerId)
                 <div class="col-md-2">
                     <?php foreach ($productImages as $index => $imageData) { ?>
                         <div class="image-preview" data-index="<?php echo $index; ?>">
-                            <img src="data:image/jpeg;base64,<?php echo $imageData; ?>" alt="<?php echo $product1['product_name']; ?>">
+                            <a class="zoomable-image" href="data:image/jpeg;base64,<?php echo $imageData; ?>" data-fancybox="images">
+                                <img src="data:image/jpeg;base64,<?php echo $imageData; ?>" alt="<?php echo $product1['product_name']; ?>">
+                            </a>
                         </div>
                     <?php } ?>
                 </div>
-
-                <div class="image-preview-large img-zoom-container">
-            <!-- Use a common class for all zoomable images -->
-            <a class="zoomable-image" href="data:image/jpeg;base64,<?php echo $productImages[0]; ?>" data-fancybox="images">
-                <img id="zoomedImage" src="data:image/jpeg;base64,<?php echo $productImages[0]; ?>" alt="<?php echo $product1['product_name']; ?>">
-            </a>
-        </div>
-
                 <div class="col-md-5">
+                    <div class="image-preview-large img-zoom-container">
+                        <a class="zoomable-image" href="data:image/jpeg;base64,<?php echo $productImages[0]; ?>" data-fancybox="images">
+                            <img class="second-column-image" src="data:image/jpeg;base64,<?php echo $productImages[0]; ?>" alt="<?php echo $product1['product_name']; ?>">
+                        </a>
+                        
+                        <span class="img-zoom-lens"></span>
+                    </div>
+                </div>
+                <div class="col-md-5"><div class="img-zoom-result"></div>
                     <h2><?php echo $product1['product_name']; ?> &nbsp; &nbsp;&nbsp;
                         <button onclick="addToWishlist(<?php echo $product1['product_id']; ?>, <?php echo $_SESSION['user_id']; ?>)" id="wish">
                             <img id="wishlistIcon" src="<?php echo $isInWishlist ? 'images/inWishlist.png' : 'images/notWishlist.png'; ?>" style="height: 28px; margin-bottom: 5px;">
@@ -207,21 +206,27 @@ function isProductInWishlist($productId, $customerId)
             </div>
         </div>
     </section>
-
     <?php include('customer_footer.php')?>
-
-    <script>
+    <script type="text/javascript">
         $(document).ready(function () {
-            $(".image-preview").click(function () {
+            $(".image-preview").hover(function () {
                 var selectedImage = $(this).find("img").attr("src");
 
-                // Update the zoomable image source and trigger zoom
-                $(".zoomable-image").attr("href", selectedImage);
-                $("#zoomedImage").attr("src", selectedImage);
+                // Update the zoomable image source
+                $(".second-column-image").attr("src", selectedImage);
 
                 // Remove the outline from all images and add it to the clicked image
                 $(".image-preview").removeClass("selected-image");
                 $(this).addClass("selected-image");
+            });
+
+            // Initialize FancyBox for the second column image
+            $(".second-column-image").click(function () {
+                var selectedImage = $(this).attr("src");
+                $.fancybox.open({
+                    src: selectedImage,
+                    type: "image"
+                });
             });
 
             $("#sizeSelect").change(function () {
@@ -237,7 +242,7 @@ function isProductInWishlist($productId, $customerId)
                 }
             });
         });
-        
+
         function addToCart(productId, customerId, descriptionId, selectedSize, selectedQuantity) {
             $.ajax({
                 url: 'add_to_cart.php',
@@ -318,7 +323,49 @@ function isProductInWishlist($productId, $customerId)
                 }
             });
         }
+
+        // Image zoom functionality
+        var lens = document.querySelector('.img-zoom-lens');
+        var result = document.querySelector('.img-zoom-result');
+        var largeImage = document.querySelector('.second-column-image');
+
+        largeImage.addEventListener('mousemove', moveLens);
+        lens.addEventListener('mousemove', moveLens);
+
+        largeImage.addEventListener('touchmove', moveLens);
+        lens.addEventListener('touchmove', moveLens);
+
+        largeImage.addEventListener('mouseout', hideLens);
+        lens.addEventListener('mouseout', hideLens);
+
+        function moveLens(e) {
+            e.preventDefault();
+
+            var bounds = largeImage.getBoundingClientRect();
+
+            var x = e.pageX - bounds.left;
+            var y = e.pageY - bounds.top;
+
+            // Center the lens over the cursor
+            lens.style.left = x - lens.offsetWidth / 2 + 'px';
+            lens.style.top = y - lens.offsetHeight / 2 + 'px';
+
+            var ratioX = x / largeImage.offsetWidth;
+            var ratioY = y / largeImage.offsetHeight;
+
+            result.style.backgroundImage = 'url("' + largeImage.src + '")';
+            result.style.backgroundSize = largeImage.width * 2 + 'px ' + largeImage.height * 2 + 'px';
+            result.style.backgroundPosition = '-' + ratioX * (largeImage.width * 2 - result.offsetWidth) + 'px -' + ratioY * (largeImage.height * 2 - result.offsetHeight) + 'px';
+
+            lens.style.display = 'block';
+            result.style.display = 'block';
+        }
+
+        function hideLens() {
+            lens.style.display = 'none';
+            result.style.display = 'none';
+        }
     </script>
 </body>
 
-</html>
+</html> 
