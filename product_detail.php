@@ -43,7 +43,67 @@ if (isset($_GET['product_id'])) {
                 $productDetails[] = $row;
             }
         }
+        $reviewQuery = "SELECT * FROM tbl_review WHERE product_id = '$product_id'";
+        $reviewResult = mysqli_query($conn, $reviewQuery);
+
+        $reviews = array();
+        if ($reviewResult && mysqli_num_rows($reviewResult) > 0) {
+            while ($row = mysqli_fetch_assoc($reviewResult)) {
+                $reviews[] = $row;
+            }
+        }
+         // Calculate average rating
+         if (!empty($reviews)) {
+            $totalRatings = count($reviews);
+            $totalRatingValue = array_sum(array_column($reviews, 'rating'));
+            $averageRating = $totalRatingValue / $totalRatings;
+        }
     }
+}
+// Function to generate star rating HTML
+function generateStarRating($rating)
+{
+    $ratingHtml = '<div class="rating">';
+    for ($i = 1; $i <= 5; $i++) {
+        if ($i <= $rating) {
+            $ratingHtml .= '<span class="star">&#9733;</span>'; // Gold star (★)
+        } else {
+            $ratingHtml .= '<span class="star">&#9734;</span>'; // Empty star (☆)
+        }
+    }
+    $ratingHtml .= '</div>';
+    return $ratingHtml;
+}
+
+// Function to generate individual star ratings and percentages
+function generateIndividualStarRatings($reviews)
+{
+    $starRatingsHtml = '';
+    $starCounts = array(0, 0, 0, 0, 0);
+    $totalReviews = count($reviews);
+
+    foreach ($reviews as $review) {
+        $rating = $review['rating'];
+        $starCounts[$rating - 1]++;
+    }
+
+    $maxPercentage = 100; // Maximum width for all bars
+
+    for ($i = 5; $i >= 1; $i--) {
+        $starPercentage = ($starCounts[$i - 1] / $totalReviews) * $maxPercentage;
+        $starRatingsHtml .= '<div class="star-rating">';
+        $starRatingsHtml .= '<div class="rating-star">' . $i . ' star</div>';
+        $starRatingsHtml .= '<div class="rating-bar">';
+        // Create the gold-filled bar
+        $starRatingsHtml .= '<div class="rating-bar-inner" style="width: ' . $starPercentage . '%;"></div>';
+        // Create the gray bar
+        $starRatingsHtml .= '<div class="rating-bar-gray" style="width: ' . $maxPercentage . '%;"></div>';
+        $starRatingsHtml .= '<div class="rating-bar-text">' . round($starPercentage, 1) . '%</div>';
+        $starRatingsHtml .= '</div>';
+        $starRatingsHtml .= '</div>';
+    }
+
+    return $starRatingsHtml;
 }
 
 // Check if the product is in the wishlist
@@ -148,6 +208,45 @@ function isProductInWishlist($productId, $customerId)
             display: none;
             position: absolute;
         }
+        /* CSS for star ratings */
+        .rating {
+            font-size: 24px; /* Adjust the font size as needed */
+        }
+
+        .star {
+            color: gold; /* Gold color for filled stars */
+            margin-right: 5px; /* Adjust the spacing between stars */
+        }
+
+        .star-rating {
+            display: flex;
+            align-items: center;
+            margin-bottom: 5px;
+        }
+
+        .rating-star {
+            flex: 0 0 100px; /* Adjust the width of the star label as needed */
+        }
+
+        .rating-bar {
+            flex: 1;
+            display: flex;
+            align-items: center;
+        }
+
+        .rating-bar-inner {
+            border-radius: 2px;
+            background-color: gold; /* Gold color for filled portion of the rating bar */
+            height: 8px; /* Adjust the height of the rating bar as needed */
+            transform-origin: left center; /* Set the transform origin to the left side */
+        }
+
+        /* New style for the gray bar */
+        .rating-bar-gray {
+            border-radius: 2px;
+            background-color: lightgray; /* Light gray color for the unfilled portion of the rating bar */
+            height: 8px; /* Adjust the height of the rating bar as needed */
+        }
     </style>
 </head>
 
@@ -202,6 +301,130 @@ function isProductInWishlist($productId, $customerId)
 
                     &nbsp;&nbsp;
                     <button>Buy Now</button>
+                    <br><br>
+                    <p><strong>Reviews and Ratings</strong></p>
+                    <?php if (count($reviews) > 0) { ?>
+                        <div class="rating" style="font-size: 8px;">
+                            <?php echo generateStarRating($averageRating); ?>
+                        </div>
+                        <p style="font-size: 16px;"><?php echo $averageRating; ?> out of 5 stars</p>
+                        <p style="font-size: 14px;"><?php echo count($reviews); ?> global ratings</p>
+                        <div class="star-ratings" style="font-size: 14px;">
+                            <?php echo generateIndividualStarRatings($reviews); ?>
+                        </div>
+                    <?php } else { ?>
+                        <p>No reviews yet. Be the first to add your review!</p>
+                        <!-- You can add a button or a link to a review submission page here -->
+                    <?php } ?>
+
+                    <?php if (empty($reviews)) { ?>
+
+<?php } else { ?>
+    <?php
+if (!empty($reviews)) {
+    // Sort the reviews by review_date in descending order (latest first)
+    usort($reviews, function ($a, $b) {
+        return strtotime($b['review_date']) - strtotime($a['review_date']);
+    });
+?>
+    <ul>
+    <?php
+if (count($reviews) > 0) {
+    // Sort the reviews by review_date in descending order (latest first)
+    usort($reviews, function ($a, $b) {
+        return strtotime($b['review_date']) - strtotime($a['review_date']);
+    });
+?>
+
+<ul id="reviewList">
+    <?php
+    $displayedReviews = min(count($reviews), 2); // Display at most 2 reviews initially
+    for ($i = 0; $i < $displayedReviews; $i++) {
+        $review = $reviews[$i];
+        // Fetch the customer's name based on user_id
+        $userId = $review['user_id'];
+        $customerName = ''; // Initialize the variable
+
+        // Query to fetch the customer's name from tbl_customer
+        $customerQuery = "SELECT customer_name FROM tbl_customer WHERE user_id = $userId";
+
+        // Execute the query and get the customer's name
+        // You should use the appropriate database connection method here
+        // Assuming you're using mysqli, here's an example:
+        $customerResult = mysqli_query($conn, $customerQuery);
+
+        if ($customerResult && mysqli_num_rows($customerResult) > 0) {
+            $customerData = mysqli_fetch_assoc($customerResult);
+            $customerName = $customerData['customer_name'];
+        }
+    ?>
+        <li>
+            <div style="display: flex; align-items: center;font-size:14px;">
+                <strong><?php echo $customerName; ?> &nbsp;&nbsp;&nbsp;</strong>
+                <div class="rating">
+                    <?php
+                    $rating = $review['rating'];
+                    for ($j = 1; $j <= 5; $j++) {
+                        if ($j <= $rating) {
+                            echo '<span class="star">&#9733;</span>'; // Gold star (★)
+                        } else {
+                            echo '<span class="star">&#9734;</span>'; // Empty star (☆)
+                        }
+                    }
+                    ?>
+                </div>
+            </div>
+            <p style="font-size:14px;"><?php echo $review['review_text']; ?></p>
+        </li>
+    <?php } ?>
+</ul>
+
+<a href="#" id="showMoreBtn">Show More</a>
+        <a href="#" id="showLessBtn" style="display: none;">Show Less</a>
+
+        <script>
+            const showMoreBtn = document.getElementById('showMoreBtn');
+            const showLessBtn = document.getElementById('showLessBtn');
+            const reviewList = document.getElementById('reviewList');
+            let reviewsDisplayed = <?php echo $displayedReviews; ?>;
+
+
+            function fetchCustomerName(query, li, review) {
+                fetch(query)
+                    .then(response => response.json())
+                    .then(data => {
+                        const customerName = data.customer_name;
+                        li.innerHTML = `
+                            <div style="display: flex; align-items: center;">
+                                <strong>${customerName} &nbsp;&nbsp;&nbsp;</strong>
+                                <div class="rating">
+                                    ${getStarRating(review.rating)}
+                                </div>
+                            </div>
+                            <p>${review.review_text}</p>
+                        `;
+                    })
+                    .catch(error => console.error(error));
+            }
+
+            function getStarRating(rating) {
+                let starRating = '';
+                for (let i = 1; i <= 5; i++) {
+                    if (i <= rating) {
+                        starRating += '<span class="star">&#9733;</span>'; // Gold star (★)
+                    } else {
+                        starRating += '<span class="star">&#9734;</span>'; // Empty star (☆)
+                    }
+                }
+                return starRating;
+            }
+        </script>
+    <?php } else { ?>
+        <p>No reviews yet. Be the first to add your review!</p>
+        <!-- You can add a button or a link to a review submission page here -->
+    <?php } ?>
+</div>
+<?php } ?> <?php } ?>
                 </div>
             </div>
         </div>
