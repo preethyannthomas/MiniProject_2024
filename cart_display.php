@@ -60,7 +60,6 @@ if (session_status() === PHP_SESSION_NONE) {
                         <tr>
                             <th>Image</th>
                             <th>Product Name</th>
-                            
                             <th>Quantity</th>
                             <th>Price Per Unit</th>
                             <th>Total Price</th>
@@ -72,11 +71,13 @@ if (session_status() === PHP_SESSION_NONE) {
                             <tr>
                                 <td><img src="data:image/jpeg;base64,<?php echo base64_encode($item['image']); ?>" alt="<?php echo $item['product_name']; ?>" class="product-image"></td>
                                 <td><?php echo $item['product_name']; ?></td>
-                                
-                                <td><input type="number" class="quantity-input" value="<?php echo $item['quantity']; ?>" min="1" max="<?php echo $item['stock']; ?>"></td>
+                                <td>
+                                    <input type="number" class="quantity-input" name="quantity[]" value="<?php echo $item['quantity']; ?>" min="1" max="<?php echo $item['stock']; ?>">
+                                    <input type="hidden" name="cart_id[]" value="<?php echo $item['cart_id']; ?>">
+                                </td>
                                 <td>Rs <?php echo $item['new_price']; ?></td>
                                 <td>Rs <span class="total-price"><?php echo $item['quantity'] * $item['new_price']; ?></span></td>
-                                <td><td><button class="btn btn-danger remove-btn" data-cart-id="<?php echo $item['cart_id']; ?>">Remove</button></td></td>
+                                <td><button class="btn btn-danger remove-btn" data-cart-id="<?php echo $item['cart_id']; ?>">Remove</button></td>
                             </tr>
                         <?php } ?>
                     </tbody>
@@ -99,35 +100,33 @@ if (session_status() === PHP_SESSION_NONE) {
 
         $(".quantity-input").on("input", function() {
             var quantity = parseInt($(this).val());
-            var price = parseFloat($(this).closest("tr").find("td:eq(4)").text().split(" ")[1]);
+            var price = parseFloat($(this).closest("tr").find("td:eq(3)").text().split(" ")[1]);
             var totalPrice = quantity * price;
             $(this).closest("tr").find(".total-price").text(totalPrice);
             updateTotalAmount();
         });
 
-  
         $(".remove-btn").on("click", function() {
-            $(this).closest("tr").remove();
-            updateTotalAmount();
+            var row = $(this).closest("tr");
             var cart_id = $(this).data("cart-id");
-    
-    $.ajax({
-        type: "POST",
-        url: "remove_cart.php", 
-        data: { cart_id: cart_id },
-        success: function(response) {
-            if (response === 'success') {
-                alert("Product removed from cart.");
-                $(this).closest("tr").remove(); 
-                updateTotalAmount();
-            } else {
-                alert("Error removing product from cart.");
-            }
-        },
-        error: function() {
-            alert("An error occurred while processing your request.");
-        }
-    });
+
+            $.ajax({
+                type: "POST",
+                url: "remove_cart.php", 
+                data: { cart_id: cart_id },
+                success: function(response) {
+                    if (response === 'success') {
+                        alert("Product removed from cart.");
+                        row.remove();
+                        updateTotalAmount();
+                    } else {
+                        alert("Error removing product from cart.");
+                    }
+                },
+                error: function() {
+                    alert("An error occurred while processing your request.");
+                }
+            });
         });
 
         function updateTotalAmount() {
