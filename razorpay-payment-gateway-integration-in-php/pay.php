@@ -1,22 +1,19 @@
-<?php 
-include('../header.php');
-?>
 <title>phpzag.com : Demo Razorpay Payment Gateway Integration in PHP</title>
-<?php include('../container.php');?>
 <div class="container">
 	<div class="row">
-	<h2>Example: Razorpay Payment Gateway Integration in PHP</h2>
+	<h2>Razorpay Payment</h2>
 	<br><br><br>
 <?php
 require('config.php');
 require('razorpay-php/Razorpay.php');
 session_start();
 use Razorpay\Api\Api;
+$amount = floatval($_GET['amount']);
 $api = new Api($keyId, $keySecret);
 $orderData = [
     'receipt'         => 3456,
-    'amount'          => $_POST['amount'] * 100,
-    'currency'        => $_POST['currency'],
+    'amount'          => $amount*100,
+    'currency'        => 'INR',
     'payment_capture' => 1
 ];
 $razorpayOrder = $api->order->create($orderData);
@@ -32,16 +29,7 @@ if ($displayCurrency !== 'INR') {
 $data = [
     "key"               => $keyId,
     "amount"            => $amount,
-    "name"              => $_POST['item_name'],
-    "description"       => $_POST['item_description'],
-    "image"             => "",
-    "prefill"           => [
-    "name"              => $_POST['cust_name'],
-    "email"             => $_POST['email'],
-    "contact"           => $_POST['contact'],
-    ],
     "notes"             => [
-    "address"           => $_POST['address'],
     "merchant_order_id" => "12312321",
     ],
     "theme"             => [
@@ -62,4 +50,3 @@ $json = json_encode($data);
 require("checkout/manual.php");
 ?>
 </div>
-<?php include('../footer.php');?>

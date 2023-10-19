@@ -67,6 +67,17 @@ if (!isset($_SESSION['user_id'])) {
           </a>
        
         </li>
+        <li class="has-submenu">
+          <a href="javascript:void(0)" class="submenu-toggle">
+            <i class="menu-icon zmdi zmdi-pages zmdi-hc-lg"></i>
+            <span class="menu-text">User Profile</span>
+            <i class="menu-caret zmdi zmdi-hc-sm zmdi-chevron-right"></i>
+          </a>
+          <ul class="submenu">
+            <li><a href="sellerProfile.php"><span class="menu-text">Seller</span></a></li>
+            <li><a href="customerProfile.php"><span class="menu-text">Customer</span></a></li>
+          </ul>
+        </li>  
        <li class="has-submenu">
           <a href="javascript:void(0)" class="submenu-toggle">
             <i class="menu-icon zmdi zmdi-pages zmdi-hc-lg"></i>
@@ -75,12 +86,12 @@ if (!isset($_SESSION['user_id'])) {
           </a>
           <ul class="submenu">
             <li><a href="salesAnalysis.php"><span class="menu-text">Sales Analysis</span></a></li>
-            <li><a href="customerAnalysis.php"><span class="menu-text">Customer Analysis</span></a></li>
+            <li><a href="customerAnalysis.php"><span class="menu-text">Product Analysis</span></a></li>
           </ul>
         </li>       
 
         <li class="has-submenu">
-          <a href="change-password.php">
+          <a href="order.php">
             <i class="menu-icon zmdi zmdi-view-dashboard zmdi-hc-lg"></i>
             <span class="menu-text">Orders</span>
           </a>

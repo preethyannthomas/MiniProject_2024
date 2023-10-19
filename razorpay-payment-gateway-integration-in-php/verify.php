@@ -38,8 +38,12 @@ if (empty($_POST['razorpay_payment_id']) === false)
 
 if ($success === true)
 {
-    $html = "<p>Your payment was successful</p>
-             <p>Payment ID: {$_POST['razorpay_payment_id']}</p>";
+    $html = "<div class = 'col-md-6' style = 'padding-left:300px; padding-top:100px;'>
+                <img src = '../images/PAYMENT-SUCCESS.png'>
+                <p style = 'padding-left:230px; font-size:24px;'><strong>Payment ID: </strong>{$_POST['razorpay_payment_id']}</p>
+                <a href = '../order.php' style = 'padding-left:280px;'><button style = ' background-color:black; color:white; height:45px; border-radius:30px;
+                font-size:20px;'>Click here to see order history</button></a>
+            </div>";
 }
 else
 {

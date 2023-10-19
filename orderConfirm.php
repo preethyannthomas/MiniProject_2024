@@ -54,7 +54,8 @@ mysqli_close($conn);
     <br><br><br><br>
     <div class="container mt-4">
         <h2>Order Confirmation</h2>
-        <br>        <h4>Customer Information</h4>
+        <br>        
+        <h4>Customer Information</h4>
         <br>
 
         <p>Email: <?php echo $customer_email; ?></p>
@@ -89,9 +90,13 @@ mysqli_close($conn);
         <p>Mobile Number: <?php echo $shipping_mobile_number; ?></p>
         <p><?php echo $shipping_address; ?></p>
         <br>
-
+       
         <h4>Total Amount: Rs <?php echo $total_amount; ?></h4> 
-        <br><a href="payment.html"><button class = "btn btn-secondary">Buy Now</button></a>
+        <br>
+        <form id="checkout-selection" method="POST">						
+			<input type="hidden" name="amount" value="<?php echo $total_amount; ?>">	
+			<a href="razorpay-payment-gateway-integration-in-php/pay.php?amount=<?php echo $total_amount; ?>" class="btn btn-secondary">Buy Now</a>				
+		</form>	
     </div>
    
 </section>

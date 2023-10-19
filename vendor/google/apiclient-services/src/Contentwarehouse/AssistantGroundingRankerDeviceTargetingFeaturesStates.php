@@ -26,6 +26,34 @@ class AssistantGroundingRankerDeviceTargetingFeaturesStates extends \Google\Mode
   /**
    * @var bool
    */
+  public $hasBufferingMediaSession;
+  /**
+   * @var bool
+   */
+  public $hasPausedMediaSession;
+  /**
+   * @var bool
+   */
+  public $hasPlayingMediaSession;
+  /**
+   * @var bool
+   */
+  public $inSameRoomAsHearingDevice;
+  /**
+   * @var bool
+   */
+  public $inSameRoomAsLocalDevice;
+  /**
+   * @var bool
+   */
+  public $inSameStructureAsHearingDevice;
+  /**
+   * @var bool
+   */
+  public $inSameStructureAsLocalDevice;
+  /**
+   * @var bool
+   */
   public $isDocked;
   /**
    * @var bool
@@ -53,6 +81,104 @@ class AssistantGroundingRankerDeviceTargetingFeaturesStates extends \Google\Mode
   public function getDistance()
   {
     return $this->distance;
+  }
+  /**
+   * @param bool
+   */
+  public function setHasBufferingMediaSession($hasBufferingMediaSession)
+  {
+    $this->hasBufferingMediaSession = $hasBufferingMediaSession;
+  }
+  /**
+   * @return bool
+   */
+  public function getHasBufferingMediaSession()
+  {
+    return $this->hasBufferingMediaSession;
+  }
+  /**
+   * @param bool
+   */
+  public function setHasPausedMediaSession($hasPausedMediaSession)
+  {
+    $this->hasPausedMediaSession = $hasPausedMediaSession;
+  }
+  /**
+   * @return bool
+   */
+  public function getHasPausedMediaSession()
+  {
+    return $this->hasPausedMediaSession;
+  }
+  /**
+   * @param bool
+   */
+  public function setHasPlayingMediaSession($hasPlayingMediaSession)
+  {
+    $this->hasPlayingMediaSession = $hasPlayingMediaSession;
+  }
+  /**
+   * @return bool
+   */
+  public function getHasPlayingMediaSession()
+  {
+    return $this->hasPlayingMediaSession;
+  }
+  /**
+   * @param bool
+   */
+  public function setInSameRoomAsHearingDevice($inSameRoomAsHearingDevice)
+  {
+    $this->inSameRoomAsHearingDevice = $inSameRoomAsHearingDevice;
+  }
+  /**
+   * @return bool
+   */
+  public function getInSameRoomAsHearingDevice()
+  {
+    return $this->inSameRoomAsHearingDevice;
+  }
+  /**
+   * @param bool
+   */
+  public function setInSameRoomAsLocalDevice($inSameRoomAsLocalDevice)
+  {
+    $this->inSameRoomAsLocalDevice = $inSameRoomAsLocalDevice;
+  }
+  /**
+   * @return bool
+   */
+  public function getInSameRoomAsLocalDevice()
+  {
+    return $this->inSameRoomAsLocalDevice;
+  }
+  /**
+   * @param bool
+   */
+  public function setInSameStructureAsHearingDevice($inSameStructureAsHearingDevice)
+  {
+    $this->inSameStructureAsHearingDevice = $inSameStructureAsHearingDevice;
+  }
+  /**
+   * @return bool
+   */
+  public function getInSameStructureAsHearingDevice()
+  {
+    return $this->inSameStructureAsHearingDevice;
+  }
+  /**
+   * @param bool
+   */
+  public function setInSameStructureAsLocalDevice($inSameStructureAsLocalDevice)
+  {
+    $this->inSameStructureAsLocalDevice = $inSameStructureAsLocalDevice;
+  }
+  /**
+   * @return bool
+   */
+  public function getInSameStructureAsLocalDevice()
+  {
+    return $this->inSameStructureAsLocalDevice;
   }
   /**
    * @param bool

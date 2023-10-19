@@ -30,13 +30,14 @@ function fetchData($conn, $query) {
     return $data;
 }
 
-// Fetch data for Product Sales Analysis
-$productQuery = "SELECT p.product_name, SUM(o.total_amount) AS product_sales 
-                 FROM tbl_product p
-                 INNER JOIN tbl_orderdetail od ON p.product_id = od.product_id
-                 INNER JOIN tbl_order o ON od.order_id = o.order_id
-                 GROUP BY p.product_name";
-$productData = fetchData($conn, $productQuery);
+// Fetch data for Product Sales Analysis by Category
+$categoryQuery = "SELECT c.category_name, SUM(od.quantity) AS total_sold
+                 FROM tbl_category c
+                 LEFT JOIN tbl_subcategory s ON c.category_id = s.category_id
+                 LEFT JOIN tbl_product p ON s.subcategory_id = p.subcategory_id
+                 LEFT JOIN tbl_orderdetail od ON p.product_id = od.product_id
+                 GROUP BY c.category_name";
+$categoryData = fetchData($conn, $categoryQuery);
 ?>
 
 <!DOCTYPE html>
@@ -90,7 +91,7 @@ $productData = fetchData($conn, $productQuery);
     <div class="container">
         <!-- Product Sales Analysis Pie Chart -->
         <div class="chart-container">
-        <canvas id="productSalesChart" ></canvas>
+        <canvas id="categorySalesChart"></canvas>
         </div>
     </div>
     </div>
@@ -114,11 +115,11 @@ $productData = fetchData($conn, $productQuery);
             });
         }
 
-        // Data for Product Sales Analysis Pie Chart
-        var productData = {
-            labels: <?php echo json_encode(array_column($productData, 'product_name')); ?>,
+        // Data for Product Sales Analysis by Category Pie Chart
+        var categoryData = {
+            labels: <?php echo json_encode(array_column($categoryData, 'category_name')); ?>,
             datasets: [{
-                data: <?php echo json_encode(array_column($productData, 'product_sales')); ?>,
+                data: <?php echo json_encode(array_column($categoryData, 'total_sold')); ?>,
                 backgroundColor: [
                     'rgba(255, 99, 132, 0.7)',
                     'rgba(54, 162, 235, 0.7)',
@@ -137,8 +138,8 @@ $productData = fetchData($conn, $productQuery);
             }]
         };
 
-        // Create Product Sales Analysis Pie Chart
-        createChart("productSalesChart", "pie", productData);
+        // Create Product Sales Analysis by Category Pie Chart
+        createChart("categorySalesChart", "pie", categoryData);
     </script>
     <script src="../libs/bower/jquery/dist/jquery.js"></script>
   <script src="../libs/bower/jquery-ui/jquery-ui.min.js"></script>

@@ -46,7 +46,7 @@
           <ul class="dropdown-menu animated flipInY">
             <li><a href="adminProfile.php"><i class="zmdi m-r-md zmdi-hc-lg zmdi-account-box"></i>My Profile</a></li>
             <li><a href="adminChangePassword.php"><i class="zmdi m-r-md zmdi-hc-lg zmdi-balance-wallet"></i>Change Password</a></li>
-            <li><a href="../logout.php"><i class="zmdi m-r-md zmdi-hc-lg zmdi-sign-in"></i>Logout</a></li>
+            <li id = "logout"><a href="../logout.php"><i class="zmdi m-r-md zmdi-hc-lg zmdi-sign-in"></i>Logout</a></li>
             
           </ul>
         </li>

@@ -167,7 +167,7 @@ return true;
 
                 <div class="row">
                     <div class="col-sm-9 col-sm-offset-3">
-                        <button type="submit" class="btn btn-success" name="submit">Save Changes</button>
+                        <button type="submit" class="btn btn-success" name="submit" id = "submit">Save Changes</button>
                     </div>
                 </div>
             </form>   

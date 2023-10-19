@@ -25,6 +25,7 @@ if (isset($_POST['update'])) {
     mysqli_query($conn, $update_email_query);
 
     $success_message = "Profile updated successfully!";
+    header("Location: profile.php");
 }
 ?>
 

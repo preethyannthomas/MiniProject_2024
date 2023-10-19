@@ -148,7 +148,7 @@ return true;
                     <p><strong></strong> </p>
                     <p><strong></strong> </p>
                       <!-- Add more personal details here -->
-                      <a href="edit_communication_details.php" class="btn text-primary">Edit </a>
+                      <a href="edit_communication_details.php" class="btn text-primary" id = "edit">Edit </a>
                     </div><!-- .widget-body -->
                   </div><!-- .widget -->
                 </div><!-- END column -->

@@ -105,14 +105,14 @@ if (isset($_POST['login'])) {
     $pass = $_POST["password"];
     $pass = md5($pass);
 
-    if (!empty($name) && !empty($pass) && !is_numeric($name)) {
+    /* if (!empty($name) && !empty($pass) && !is_numeric($name)) {
         $recaptchaSecretKey = "6Legj5MnAAAAAEURNcMOtZQAacUKNiRwRtoc1gjj";
         $recaptchaResponse = $_POST['g-recaptcha-response'];
 
         $verifyResponse = file_get_contents("https://www.google.com/recaptcha/api/siteverify?secret=$recaptchaSecretKey&response=$recaptchaResponse");
         $responseData = json_decode($verifyResponse);
 
-        if ($responseData->success) {
+        if ($responseData->success) { */
             $query = "SELECT * FROM tbl_user WHERE email = '$name' AND password = '$pass'";
             $result = mysqli_query($conn, $query);
 
@@ -138,13 +138,13 @@ if (isset($_POST['login'])) {
                             break;
                     }
                 }
-            } else {
+            } /* else {
                 echo '<script>alert("Wrong username or password!")</script>';
             }
         } else {
             echo '<script>alert("reCAPTCHA verification failed!")</script>';
-        }
-    } else {
+        } 
+    } */else {
         echo '<script>alert("Wrong username or password!")</script>';
     }
 }
@@ -300,8 +300,8 @@ if (isset($_POST['login'])) {
                             <p id="emailError" class="error"></p>
                             <input type="password" name="password" id="id_password" placeholder="Password">
                             <p id="passwordError" class="error"></p>
-                            <div class="g-recaptcha" data-sitekey="6Legj5MnAAAAAMy8KZAXmeroGPQFM7hdMFE_E9zL"
-                                 style="align-items: center;width:330px;"></div><br>
+                           <!-- <div class="g-recaptcha" data-sitekey="6Legj5MnAAAAAMy8KZAXmeroGPQFM7hdMFE_E9zL"
+                                 style="align-items: center;width:330px;"></div><br> -->
                             <button type="submit" name = "login" class="btn btn-login" id="log" style="color:#ede5e5;">Login</button>
                             <hr class="hr-with-text">
     <span class="or-text">or</span>

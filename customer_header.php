@@ -30,9 +30,9 @@
                             <li>
                                 <form method="GET" class="form-inline ml-3">
                                     <div class="input-group">
-                                        <input type="text" placeholder="Search for products" name="search_query">
+                                        <input type="text" placeholder="Search for products" id = "search" name="search_query">
                                         <div class="input-group-append">
-                                            <button class="btn btn-secondary" type="submit"><i class="fas fa-search"></i></button>
+                                            <button class="btn btn-secondary" id = "searchbutton" type="submit"><i class="fas fa-search"></i></button>
                                         </div>
                                     </div>
                                 </form>
@@ -45,7 +45,7 @@
                                     <li><a href="profile.php">Your Profile</a></li>
                                     <li><a href="cart_display.php">Cart</a></li>
                                     <li><a href="wishList.php">Wishlist</a></li>
-                                    <li><a href="#fees">Orders</a></li>
+                                    <li><a href="order.php">Orders</a></li>
                                     <li><a href="logout.php">Log Out</a></li>
                                 </ul>
                             </li>
