@@ -293,8 +293,6 @@ function isProductInWishlist($productId, $customerId)
                         <?php } ?>
                     </select>
                     <p id="priceDisplay">Price: Rs <?php echo $productDetails[0]['new_price']; ?></p>
-<<<<<<< HEAD
-=======
 
                     <label for="quantityInput">Choose Quantity:</label>
                     <input type="number" id="quantityInput" min="1" max="<?php echo $productDetails[0]['stock']; ?>">
@@ -384,134 +382,6 @@ if (count($reviews) > 0) {
 <a href="#" id="showMoreBtn">Show More</a>
         <a href="#" id="showLessBtn" style="display: none;">Show Less</a>
 
-        <script>
-            const showMoreBtn = document.getElementById('showMoreBtn');
-            const showLessBtn = document.getElementById('showLessBtn');
-            const reviewList = document.getElementById('reviewList');
-            let reviewsDisplayed = <?php echo $displayedReviews; ?>;
->>>>>>> b62bbf2205eba5b7db0500c71b67f3f3c6abaabc
-
-                    <label for="quantityInput">Choose Quantity:</label>
-                    <input type="number" id="quantityInput" min="1" max="<?php echo $productDetails[0]['stock']; ?>">
-                    <br><br>
-                    <button onclick="addToCart(<?php echo $product1['product_id']; ?>, <?php echo $_SESSION['user_id']; ?>, <?php echo $productDescription['description_id']; ?>, $('#sizeSelect').val(), $('#quantityInput').val())">Add to Cart</button>
-
-<<<<<<< HEAD
-                    &nbsp;&nbsp;
-                    <button>Buy Now</button>
-                    <br><br>
-                    <p><strong>Reviews and Ratings</strong></p>
-                    <?php if (count($reviews) > 0) { ?>
-                        <div class="rating" style="font-size: 8px;">
-                            <?php echo generateStarRating($averageRating); ?>
-                        </div>
-                        <p style="font-size: 16px;"><?php echo $averageRating; ?> out of 5 stars</p>
-                        <p style="font-size: 14px;"><?php echo count($reviews); ?> global ratings</p>
-                        <div class="star-ratings" style="font-size: 14px;">
-                            <?php echo generateIndividualStarRatings($reviews); ?>
-                        </div>
-                    <?php } else { ?>
-                        <p>No reviews yet. Be the first to add your review!</p>
-                        <!-- You can add a button or a link to a review submission page here -->
-                    <?php } ?>
-
-                    <?php if (empty($reviews)) { ?>
-
-<?php } else { ?>
-    <?php
-if (!empty($reviews)) {
-    // Sort the reviews by review_date in descending order (latest first)
-    usort($reviews, function ($a, $b) {
-        return strtotime($b['review_date']) - strtotime($a['review_date']);
-    });
-?>
-    <ul>
-    <?php
-if (count($reviews) > 0) {
-    // Sort the reviews by review_date in descending order (latest first)
-    usort($reviews, function ($a, $b) {
-        return strtotime($b['review_date']) - strtotime($a['review_date']);
-    });
-?>
-
-<ul id="reviewList">
-    <?php
-    $displayedReviews = min(count($reviews), 2); // Display at most 2 reviews initially
-    for ($i = 0; $i < $displayedReviews; $i++) {
-        $review = $reviews[$i];
-        // Fetch the customer's name based on user_id
-        $userId = $review['user_id'];
-        $customerName = ''; // Initialize the variable
-
-        // Query to fetch the customer's name from tbl_customer
-        $customerQuery = "SELECT customer_name FROM tbl_customer WHERE user_id = $userId";
-
-        // Execute the query and get the customer's name
-        // You should use the appropriate database connection method here
-        // Assuming you're using mysqli, here's an example:
-        $customerResult = mysqli_query($conn, $customerQuery);
-
-        if ($customerResult && mysqli_num_rows($customerResult) > 0) {
-            $customerData = mysqli_fetch_assoc($customerResult);
-            $customerName = $customerData['customer_name'];
-        }
-    ?>
-        <li>
-            <div style="display: flex; align-items: center;font-size:14px;">
-                <strong><?php echo $customerName; ?> &nbsp;&nbsp;&nbsp;</strong>
-                <div class="rating">
-                    <?php
-                    $rating = $review['rating'];
-                    for ($j = 1; $j <= 5; $j++) {
-                        if ($j <= $rating) {
-                            echo '<span class="star">&#9733;</span>'; // Gold star (★)
-                        } else {
-                            echo '<span class="star">&#9734;</span>'; // Empty star (☆)
-                        }
-                    }
-                    ?>
-                </div>
-            </div>
-            <p style="font-size:14px;"><?php echo $review['review_text']; ?></p>
-        </li>
-    <?php } ?>
-</ul>
-
-<a href="#" id="showMoreBtn">Show More</a>
-        <a href="#" id="showLessBtn" style="display: none;">Show Less</a>
-
-=======
-            function fetchCustomerName(query, li, review) {
-                fetch(query)
-                    .then(response => response.json())
-                    .then(data => {
-                        const customerName = data.customer_name;
-                        li.innerHTML = `
-                            <div style="display: flex; align-items: center;">
-                                <strong>${customerName} &nbsp;&nbsp;&nbsp;</strong>
-                                <div class="rating">
-                                    ${getStarRating(review.rating)}
-                                </div>
-                            </div>
-                            <p>${review.review_text}</p>
-                        `;
-                    })
-                    .catch(error => console.error(error));
-            }
-
-            function getStarRating(rating) {
-                let starRating = '';
-                for (let i = 1; i <= 5; i++) {
-                    if (i <= rating) {
-                        starRating += '<span class="star">&#9733;</span>'; // Gold star (★)
-                    } else {
-                        starRating += '<span class="star">&#9734;</span>'; // Empty star (☆)
-                    }
-                }
-                return starRating;
-            }
-        </script>
->>>>>>> b62bbf2205eba5b7db0500c71b67f3f3c6abaabc
     <?php } else { ?>
         <p>No reviews yet. Be the first to add your review!</p>
         <!-- You can add a button or a link to a review submission page here -->
@@ -522,7 +392,6 @@ if (count($reviews) > 0) {
             </div>
         </div>
     </section>
-<<<<<<< HEAD
     
     <script>
             const showMoreBtn = document.getElementById('showMoreBtn');
@@ -599,45 +468,6 @@ if (count($reviews) > 0) {
             });
         });
 
-=======
-    <?php include('customer_footer.php')?>
-    <script type="text/javascript">
-        $(document).ready(function () {
-            $(".image-preview").hover(function () {
-                var selectedImage = $(this).find("img").attr("src");
-
-                // Update the zoomable image source
-                $(".second-column-image").attr("src", selectedImage);
-
-                // Remove the outline from all images and add it to the clicked image
-                $(".image-preview").removeClass("selected-image");
-                $(this).addClass("selected-image");
-            });
-
-            // Initialize FancyBox for the second column image
-            $(".second-column-image").click(function () {
-                var selectedImage = $(this).attr("src");
-                $.fancybox.open({
-                    src: selectedImage,
-                    type: "image"
-                });
-            });
-
-            $("#sizeSelect").change(function () {
-                var selectedSize = $(this).val();
-                var selectedSizeData = <?php echo json_encode($productDetails); ?>;
-
-                for (var i = 0; i < selectedSizeData.length; i++) {
-                    if (selectedSizeData[i]['size'] === selectedSize) {
-                        $("#priceDisplay").text("Price: Rs " + selectedSizeData[i]['new_price']);
-                        $("#quantityInput").attr("max", selectedSizeData[i]['stock']);
-                        break;
-                    }
-                }
-            });
-        });
-
->>>>>>> b62bbf2205eba5b7db0500c71b67f3f3c6abaabc
         function addToCart(productId, customerId, descriptionId, selectedSize, selectedQuantity) {
             $.ajax({
                 url: 'add_to_cart.php',
