@@ -107,7 +107,7 @@
 
             // h-hotel account
             $mail->Username='preethyannthomas2024@mca.ajce.in';
-            $mail->Password='ammu@123';
+            $mail->Password='*********';
 
             // send by h-hotel email
             $mail->setFrom('preethyannthomas2024@mca.ajce.in', 'Password Reset');

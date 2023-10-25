@@ -27,16 +27,18 @@ if (session_status() === PHP_SESSION_NONE) {
     <div class="container">
         <h2>Your Cart</h2>
         <?php
+        
         if (!isset($_SESSION['user_id'])) {
             header('location:./');
         }
+
         $customerId = $_SESSION['user_id'];
 
         $cartQuery = "SELECT c.*, p.product_name, p.image, pd.new_price, pd.stock, pd.colour
                       FROM tbl_cart c
                       JOIN tbl_product p ON c.product_id = p.product_id
                       JOIN tbl_productdetail pd ON c.product_id = pd.product_id AND c.size = pd.size
-                      WHERE c.user_id = '$customerId' and status = 1";
+                      WHERE c.user_id = '$customerId' and status =1";
         $cartResult = mysqli_query($conn, $cartQuery);
 
         if ($cartResult && mysqli_num_rows($cartResult) > 0) {
@@ -82,8 +84,8 @@ if (session_status() === PHP_SESSION_NONE) {
                 </table>
             </div>
             <div class="text-right">
-                <h4>Total Amount: Rs <span id="totalAmount">0.00</span></h4>
-                <a id="buyNowButton" class="btn btn-primary mt-3" href="orderConfirm.php?totalAmount=0.00">Buy Now</a>
+                <h4>Total Amount: Rs <span id="totalAmount"></span></h4>
+                <a href = "orderConfirm.php"><button class="btn btn-primary mt-3">Buy Now</button></a>
             </div>
         <?php } ?>
     </div>
@@ -100,7 +102,7 @@ if (session_status() === PHP_SESSION_NONE) {
             var quantity = parseInt($(this).val());
             var price = parseFloat($(this).closest("tr").find("td:eq(3)").text().split(" ")[1]);
             var totalPrice = quantity * price;
-            $(this).closest("tr").find(".total-price").text("Rs " + totalPrice.toFixed(2));
+            $(this).closest("tr").find(".total-price").text(totalPrice);
             updateTotalAmount();
         });
 
@@ -130,19 +132,12 @@ if (session_status() === PHP_SESSION_NONE) {
         function updateTotalAmount() {
             var total = 0;
             $(".total-price").each(function() {
-                total += parseFloat($(this).text().split(" ")[1]);
+                total += parseFloat($(this).text());
             });
-
-            // Update the total amount displayed on the page
-            $("#totalAmount").text("Rs " + total.toFixed(2));
-
-            // Update the Buy Now button's href with the total amount
-            var buyNowLink = "orderConfirm.php?totalAmount=" + total.toFixed(2);
-            $("#buyNowButton").attr("href", buyNowLink);
+            $("#totalAmount").text(total.toFixed(2));
         }
     });
 </script>
 
 </body>
 </html>
-
