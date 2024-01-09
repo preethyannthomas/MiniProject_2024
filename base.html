@@ -1,0 +1,213 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>About Us</title>
+    <style>
+        /* CSS styles for the sections and indicators (same as previous code) */
+        .section {
+            display: none;
+        }
+
+        .section.active {
+            display: block;
+        }
+
+        .indicators {
+            text-align: center;
+            margin-top: 20px;
+        }
+
+        .indicator {
+            display: inline-block;
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            background-color: #ccc;
+            margin: 0 5px;
+            cursor: pointer;
+        }
+
+        .indicator.active {
+            background-color: #333;
+        }
+    </style>
+</head>
+
+<body>
+    <?php include("header.php") ?><br>
+    <div class="container" id="listProducts"><br><br><br>
+        <div class="row">
+            <div class="col-md-6">
+                <br>
+                <img src="../images/career1.png" alt="" style="height: 380px; width: 550px;">
+            </div>
+            <div class="col-md-6">
+                <br>
+                <h2>Building for the next <strong style="color:blue;">200 MN </strong>customers</h2>
+                <h3>A technology-first approach</h3><br>
+                SwapZone, as India’s leading e-commerce marketplace, has transformed the way millions of Indians shop
+                today. Our growth has been powered by our strong community of Flipsters that have innovated across
+                consumer technology, product design & development, artificial intelligence, supply chain management to
+                deliver several industry-first disruptions such as cash on delivery, no-cost EMI, 10-day replacement
+                policy, an automated marketplace and more!
+
+                We’re on an exciting journey towards capturing our next 200 million customers. Would you like to be a
+                part of our quest? Get all the resources you’ll need to understand what we do, our hiring process and
+                acing the SwapZone interview across roles! Let’s get started!
+            </div>
+        </div>
+        <br><br>
+    </div>
+    <div class="container" id="listProducts"><br><br><br>
+        <h3 style="color:blue; text-align:center;">EXPLORE. LEARN. GROW.</h3><br>
+        <h1 style="text-align:center;">Meet Our Teams</h1><br>
+        <div class="row">
+            <div class="col-md-1"></div>
+            <div class="col-md-10" style="text-align:center;">
+                At Flipkart, you’ll have a large canvas to design your next masterpiece on! Our cross-functional teams
+                come together to create growth for the company as well as for you - the individual. Looking for your
+                next big role? Know more about our teams.
+
+                Looking for you next big role? Know more about our teams
+            </div>
+            <div class="col-md-1"></div>
+        </div>
+    </div>
+    <div class="section-container">
+        <!-- Sections -->
+        <div class="section active">
+            <div class="row">
+                <div class="col-md-6">
+
+                </div>
+                <div class="col-md-6">
+                    <h2>Mayur Datar</h2>
+                    <h3>Principal Data Scientist</h3>
+                    My journey at Flipkart has been one of learning and excitement! Having been a part of the company’s
+                    hyper-growth phase, I feel like what you learn at Flipkart in one year would take many years
+                    outside! When I joined Flipkart, our data science team was quite small. It’s been very fulfilling
+                    and rewarding to watch the team grow and have a huge impact on so many aspects of business, while
+                    still retaining a sense of one community – which has always been the hallmark of teams at Flipkart!
+                </div>
+            </div>
+        </div>
+        <div class="section">
+            <div class="col-md-6">
+
+            </div>
+            <div class="col-md-6">
+                <h2>Ankit Khurrana</h2>
+                <h3>Senior Director, Product</h3>
+                I’ve been a part of Flipkart’s Product Management Group for 8 years and come to work every day to
+                participate in this incredible transformation of the E-Commerce industry through tech and product
+                disruptions! As we solve for the Next 200 Million customers, the smart and talented peer group, culture
+                of ownership and emphasis on meritocracy work as strong stimulants for personal as well as
+                organizational growth!
+            </div>
+        </div>
+    </div>
+    <div class="section">
+        <div class="col-md-6">
+
+        </div>
+        <div class="col-md-6">
+            <h2>Rishit Shetty</h2>
+            <h3>Senior Engineering Manager</h3>
+            Working at Flipkart provides you with challenging problems and milestones, competent peers and transparent
+            work environment – every day! I loved it so much that I actually took the Flipkart journey twice! In both my
+            stints, I had the opportunity to solve for big challenges right from bank integrations to revamping the
+            entire tech stack for Retail. Flipkart’s culture allows you to navigate across many different roles across
+            different teams, and that’s great for holistic development!
+        </div>
+    </div>
+    <div class="section">
+        <div class="col-md-6">
+
+        </div>
+        <div class="col-md-6">
+            <h2>Rashmi Gulhane</h2>
+            <h3>Software Developer</h3>
+            Being at Flipkart is fulﬁlling each day because you get to learn something new and vividly see the impact of
+            your work – which is so satisfying! Here I’ve found the right work-life balance,challenging work, equal
+            opportunities and supportive teammates!
+        </div>
+    </div>
+    <div class="section">
+        <div class="col-md-6">
+
+        </div>
+        <div class="col-md-6">
+            <h2>Bhoomika Kumawat</h2>
+            <h3>Product Manager</h3>
+            As a product manager, it’s really heartening to see that customer-centricity cuts across all the work we do
+            and is ingrained in each Flipster! The company moves fast but doesn’t compromise, and it’s a great feeling
+            to watch customers being delighted with the products that you build! From my ﬁrst day, I’ve been working
+            with the brightest minds and solving the unique and challenging problems of Indian e-commerce at scale!
+        </div>
+    </div>
+    <!-- Add more sections as needed -->
+
+    <!-- Indicators -->
+    <div class="indicators">
+        <span class="indicator active" onclick="showSection(0)"></span>
+        <span class="indicator" onclick="showSection(1)"></span>
+        <span class="indicator" onclick="showSection(2)"></span>
+        <!-- Add more indicators as needed -->
+    </div>
+    </div>
+
+    <div class="container" id="listProducts"><br><br><br>
+        <div class="row">
+            <div class="col-md-6">
+                <br>
+                <h2>We Care</h2> <br><br>
+                Our culture of care extends to our people,
+                stakeholders, customers and the planet! We do not
+                believe in a one size fits all strategy. Our benefits and
+                care policies are driven by empathy and customised
+                to the unique needs of individual Flipsters. Because
+                when Flipsters and their families are cared for, they
+                can focus on doing their best work. We put your
+                hopes, dreams and endeavours first - always.
+            </div>
+            <div class="col-md-6">
+                <br>
+                <img src="../images/career4.png" alt="" style="height: 380px; width: 550px;border-radius:25px;">
+            </div>
+        </div>
+
+    </div>
+    <?php include("footer.php") ?>
+    <script>
+        // JavaScript code for changing sections with timer
+        const sections = document.querySelectorAll('.section');
+        const indicators = document.querySelectorAll('.indicator');
+        let currentIndex = 0;
+
+        function showSection(index) {
+            sections.forEach(section => section.classList.remove('active'));
+            indicators.forEach(indicator => indicator.classList.remove('active'));
+
+            sections[index].classList.add('active');
+            indicators[index].classList.add('active');
+            currentIndex = index;
+        }
+
+        function changeSectionAutomatically() {
+            currentIndex = (currentIndex + 1) % sections.length;
+            showSection(currentIndex);
+        }
+
+        // Initial display
+        showSection(currentIndex);
+
+        // Change section automatically every 5 seconds (5000 milliseconds)
+        setInterval(changeSectionAutomatically, 5000);
+    </script>
+
+</body>
+
+</html>

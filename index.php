@@ -35,9 +35,9 @@
                             <li class="scroll-to-section"><a href="#top" class="active">Home</a></li>
                             <li class="scroll-to-section"><a href="#men">Men's</a></li>
                             <li class="scroll-to-section"><a href="#women">Women's</a></li>
-                            <li class="scroll-to-section"><a href="#kids">Kid's</a></li>
-                           
+                            <li class="scroll-to-section"><a href="#kids">Kid's</a></li>                  
                             <li class="scroll-to-section"><a href="sellerIndex.php">Sell Online</a></li>
+                            <li class="scroll-to-section"><a href="careers/about.php">Careers</a></li>
                             <li class="scroll-to-section"><a href="login.php">Login</a></li>
                         </ul>
                         <a class='menu-trigger'>

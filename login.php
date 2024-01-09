@@ -74,6 +74,12 @@ if (isset($_GET['code'])) {
                         // Seller role
                         header("Location: seller/sellerProfile.php");
                         exit;
+                    case 3:
+                        $_SESSION['login_role'] = 3;
+                        $_SESSION['user_id'] = $user_data['user_id'];
+                        // Delivery boy role
+                        header("Location: deliveryboy/deliveryboyProfile.php");
+                        exit;
                     default:
                         // Invalid role
                         echo '<script>alert("Invalid role!")</script>';
@@ -132,6 +138,9 @@ if (isset($_POST['login'])) {
                             break;
                         case 2:
                             header("Location: seller/sellerProfile.php");
+                            break;
+                        case 3:
+                            header("Location: deliveryboy/deliveryboyProfile.php");
                             break;
                         default:
                             echo '<script>alert("Invalid role!")</script>';
